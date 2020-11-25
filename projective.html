@@ -1,185 +1,253 @@
 <!DOCTYPE html>
 <html>
     <head>
-	<meta charset="utf-8">
+        <meta charset="utf-8">
 	<title>Projective Geometry</title>
 	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-	<script async src="https://cdn.babylonjs.com/babylon.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+	<script src="https://cdn.babylonjs.com/babylon.js"></script>
+	<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.js"></script>
 	<script>
-	 let demos = [];
+	 let d = [];
 	 let timeZero;
 
 	 function time() {
 	     return (Date.now() - timeZero) / 1000;
-	 }
+         }
 
-	 function initSlides() {
-	     const slides = document.querySelectorAll('.slide');
-	     for (let k = 0; k < slides.length; k++) {
-		 slides[k].id = 'slide-' + k;
-		 const controls = document.createElement('footer');
-		 controls.className = 'controls';
-		 const back = document.createElement('a');
-		 if (k > 0) {
-		     back.href = '#slide-' + (k - 1);
-		     // back.addEventListener('click', setSlide(k - 1));
-		     back.textContent = 'back';
-		 }
-		 controls.appendChild(back);
-		 const next = document.createElement('a');
-		 if (k < slides.length - 1) {
-		     next.href = '#slide-' + (k + 1);
-		     // next.addEventListener('click', setSlide(k + 1));
-		     next.textContent = 'next';
-		 }
-		 controls.appendChild(next);
-		 slides[k].appendChild(controls);
-	     }
+         function initSlides() {
+             const slides = document.querySelectorAll('.slide');
+             for (let k = 0; k < slides.length; k++) {
+                 slides[k].id = 'slide-' + k;
+                 const controls = document.createElement('footer');
+                 controls.className = 'controls';
+                 const back = document.createElement('a');
+                 if (k > 0) {
+                     back.href = '#slide-' + (k - 1);
+                     // back.addEventListener('click', setSlide(k - 1));
+                     back.textContent = 'back';
+                 }
+                 controls.appendChild(back);
+                 const next = document.createElement('a');
+                 if (k < slides.length - 1) {
+                     next.href = '#slide-' + (k + 1);
+                     // next.addEventListener('click', setSlide(k + 1));
+                     next.textContent = 'next';
+                 }
+                 controls.appendChild(next);
+                 slides[k].appendChild(controls);
+             }
 
-	     const demo = document.getElementById('demo');
-	     demo.width = Math.floor(window.innerWidth / 4);
-	     demo.height = demo.width;
-	 }
+             const canvas = document.getElementById('canvas');
+             canvas.width = Math.floor(window.innerWidth / 4);
+             canvas.height = canvas.width;
 
-	 function initScenes(canvas, engine) {
-	     let scenes = [];
-	     for (let k = 0; k < demos.length; k++) {
-		 scenes[k] = demos[k] ? demos[k](canvas, engine) : null;
-	     }
-	     return scenes;
-	 }
+             const demos = document.querySelectorAll('.demo');
+             for (let k = 0; k < demos.length; k++) {
+                 demos[k].rows = 20;
+                 demos[k].cols = 80;
+                 demos[k].autocomplete = 'off';
+                 eval(demos[k].textContent);
+                 // console.log(d);
+             }
+         }
 
-	 function blankScene(canvas, engine) {
-	     let scene = new BABYLON.Scene(engine);
-	     scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
-	     let camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 0, BABYLON.Vector3.Zero());
-	     return scene;
-	 }
+         function initScenes(canvas, engine) {
+             let scenes = [];
+             for (let k = 0; k < d.length; k++) {
+                 scenes[k] = d[k] ? d[k](canvas, engine) : null;
+             }
+             return scenes;
+         }
 
-	 function doRender() {
-	     const antialias = false;
-	     canvas = document.getElementById('demo');
-	     engine = new BABYLON.Engine(canvas, antialias);
+         function blankScene(canvas, engine) {
+             const scene = new BABYLON.Scene(engine);
+             scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+             const camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 0, BABYLON.Vector3.Zero());
+             return scene;
+         }
 
-	     let scenes = initScenes(canvas, engine);
-	     let blank = blankScene(canvas, engine);
+         function teapotScene(canvas, engine) {
+             const scene = new BABYLON.Scene(engine);
+             const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
+             const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
+             l.intensity = 0.7;
+             let teapot = null;
+             BABYLON.SceneLoader.ImportMesh('', './newell_teaset/', 'teapot.obj', scene, (meshes) => {
+                 teapot = BABYLON.Mesh.MergeMeshes(meshes);
+                 teapot.name = 'teapot';
+             });
+             return scene;
+         }
+
+         function doRender() {
+             const antialias = false;
+             canvas = document.getElementById('canvas');
+             engine = new BABYLON.Engine(canvas, antialias);
+
+             let scenes = initScenes(canvas, engine);
+             let blank = blankScene(canvas, engine);
 
              window.addEventListener('resize', () => {
                  engine.resize();
              });
 
-	     timeZero = Date.now();
-	     engine.runRenderLoop(() => {
-		 let k = parseInt(window.location.hash.split('-')[1]);
-		 if (!isNaN(k) && scenes[k]) {
-		     scenes[k].render();
-		 } else {
-		     blank.render();
-		 }
-	     });
-	 }
+             timeZero = Date.now();
+             engine.runRenderLoop(() => {
+                 let k = parseInt(window.location.hash.split('-')[1]);
+                 if (!isNaN(k) && scenes[k]) {
+                     scenes[k].render();
+                 } else {
+                     blank.render();
+                 }
+             });
+         }
 
-	 function main() {
-	     initSlides();
-	     doRender();
-	 }
-	 window.addEventListener('load', main);
-	</script>
-	<style>
-	 body {
-	     margin: 0;
-	     padding: 0;
-	 }
-	 #demo {
-	     position: fixed;
-	     right: 5vw;
-	     top: 25vh;
-	 }
-	 .slide {
-	     width: 60vw;
-	     height: 100vh;
-	     position: relative;
-	     margin-left: 5vw;
-	 }
-	 .controls {
-	     position: absolute;
-	     bottom: 5vw;
-	     left: 0;
-	     display: flex;
-	     justify-content: center;
-	     background-color: grey;
-	     border-radius: 5px;
-	 }
-	 .controls > a {
-	     flex: 1;
-	     margin: 1em;
-	     width: 2em;
-	     color: inherit;
-	     text-decoration: none;
-	 }
-	</style>
+         function main() {
+             initSlides();
+             doRender();
+         }
+         window.addEventListener('load', main);
+        </script>
+        <style>
+         body {
+             margin: 0;
+             padding: 0;
+         }
+         #canvas {
+             position: fixed;
+             right: 5vw;
+             top: 10vh;
+         }
+         .slide {
+             width: 60vw;
+             height: 90vh;
+             position: relative;
+             padding: 2.5vw;
+         }
+         .controls {
+             position: absolute;
+             bottom: 5vw;
+             left: 2.5vw;
+             display: flex;
+             justify-content: center;
+             background-color: grey;
+             border-radius: 5px;
+         }
+         .controls > a {
+             flex: 1;
+             margin: 1em;
+             width: 2em;
+             color: inherit;
+             text-decoration: none;
+         }
+        </style>
     </head>
     <body>
-	<canvas id="demo"></canvas>
-	<section class="slide">
-	    <h1>Projective Geometry</h1>
-	</section>
-	<section class="slide">
-	    <h2>Linear Transformations</h2>
-	    Using matrices we can for example scale, \[
-	    \begin{pmatrix}
-	    t & 0 & 0 \\
-	    0 & t & 0 \\
-	    0 & 0 & t
-	    \end{pmatrix}
-	    \] and rotate, \[
-	    \begin{pmatrix}
-	    \cos t & 0 & \sin t \\
-	    0 & 1 & 0 \\
-	    -\sin t & 0 & \cos t
-	    \end{pmatrix}
-	    \] our object.
-	    The
-	    <script>
-	     demos.push((c, e) => {
-		 const s = new BABYLON.Scene(e);
-		 new BABYLON.ArcRotateCamera('camera', Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), s);
-		 const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), s);
-		 l.intensity = 0.7;
-		 const box = BABYLON.MeshBuilder.CreateBox("box", {width: 2, height: 1, depth: 1.5, segments: 32}, s);
-		 box.position.y = 2;
-		 const rotate = new BABYLON.Animation('rotate', 'rotation.y', 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
-		 rotate.setKeys([{frame: 0, value: 0}, {frame: 30, value: Math.PI}]);
-		 box.animations.push(rotate);
-		 s.beginAnimation(box, 0, 30, true);
-		 BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, s);
-		 return s;
-	     });
-	    </script>
-	</section>
-	<section class="slide">
-	    <h2>Homogeneous coodinates</h2>
-	    <script>
-	     demos.push((c, e) => {
-		 const s = new BABYLON.Scene(e);
-		 new BABYLON.ArcRotateCamera('camera', Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), s);
-		 const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), s);
-		 l.intensity = 0.7;
-		 const box = BABYLON.MeshBuilder.CreateBox("box", {width: 1, height: 2, depth: 1.5, segments: 32}, s);
-		 box.position.y = 2;
-		 BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, s);
-		 A = BABYLON.Matrix.FromValues(
-		     1, 0, 0, 0,
-		     0, 1, 0, 0,
-		     0, 0, 2, 0,
-		     0, 0, 0, 1);
-		 s.registerBeforeRender(() => {
-		     box._worldMatrix = A;
-		 });
-		 return s;
-	     });
-	    </script>
-	</section>
+        <canvas id="canvas"></canvas>
+        <section class="slide">
+            <h1>Projective Geometry</h1>
+            <pre class="demo">
+d[0] = (c, e) => {
+    const s = teapotScene(c, e);
+    return s;
+};
+            </pre>
+        </section>
+        <section class="slide">
+            <h2>Linear Transformations</h2>
+            <p>
+                Using matrices we can for example scale, \[
+                A = \begin{pmatrix}
+                0 & 0 & 0 \\
+                0 & 0.75 + 0.25 \sin t & 0 \\
+                0 & 0 & 0
+                \end{pmatrix}
+                \] and rotate, \[
+                B = \begin{pmatrix}
+                \cos t & 0 & \sin t \\
+                0 & 1 & 0 \\
+                -\sin t & 0 & \cos t
+                \end{pmatrix}
+                \] our object by multiplying each vertex with the matrix \(AB\).
+            </p>
+            <pre class="demo">
+d[1] = (c, e) => {
+    let s = teapotScene(c, e);
+    s.registerBeforeRender(() => {
+        A = BABYLON.Matrix.FromValues(
+            1, 0, 0, 0,
+            0, 0.75 + 0.25 * Math.sin(time()), 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ).transpose();
+        B = BABYLON.Matrix.FromValues(
+            Math.cos(time()), 0, Math.sin(time()), 0,
+            0, 1, 0, 0,
+            -Math.sin(time()), 0, Math.cos(time()), 0,
+            0, 0, 0, 1
+        ).transpose();
+        let m = s.getMeshByName('teapot');
+        if (m) {
+            m.setPivotMatrix(A.multiply(B), false);
+        }
+    });
+    return s;
+};
+            </pre>
+        </section>
+        <section class="slide">
+            <h2>Affine transformations</h2>
+            <p>
+                By adding an extra coordinate to the vertices, \[
+                p = \begin{pmatrix}
+                x \\ y \\ z
+                \end{pmatrix} \quad \Longrightarrow \quad p_H = \begin{pmatrix}
+                x \\ y \\ z \\ 1
+                \end{pmatrix}
+                \] we can also obtain translations, \[
+                C = \begin{pmatrix}
+                1 & 0 & 0 & \cos t \\
+                1 & 0 & 0 & 0 \\
+                1 & 0 & 0 & \sin t \\
+                0 & 0 & 0 & 1
+                \end{pmatrix}
+                \]
+            </p>
+            <pre class="demo">
+d[2] = (c, e) => {
+    let s = teapotScene(c, e);
+    s.registerBeforeRender(() => {
+        C = BABYLON.Matrix.FromValues(
+            1, 0, 0, Math.cos(time()),
+            0, 1, 0, 0,
+            0, 0, 1, Math.sin(time()),
+            0, 0, 0, 1
+        ).transpose();
+        let m = s.getMeshByName('teapot');
+        if (m) {
+            m.setPivotMatrix(C, false);
+        }
+    });
+    return s;
+};
+            </pre>
+        </section>
+        <section class="slide">
+            <h2>Homogeneous coordinates</h2>
+            <p>
+                Vectors on the form \[
+                p_H = \begin{pmatrix}
+                \lambda x \\ \lambda y \\ \lambda
+                \end{pmatrix}
+                \] where \(\lambda \neq 0\), are said to be the <em>homogeneous coordinates</em> of the point \[
+                p = \begin{pmatrix}
+                x \\ y
+                \end{pmatrix}
+                \] in the two dimensional plane.
+                Each 2D point is thus represented by a one-dimensional subspace (a line) in 3D.
+                In a similar manner, each 3D point can be represented by a one-dimensional subspace of 4D space.
+            </p>
+        </section>
     </body>
 </html>
