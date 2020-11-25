@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+    <head>
+	<meta charset="utf-8">
+	<title>Projective Geometry</title>
+	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+	<script async src="https://cdn.babylonjs.com/babylon.js"></script>
+	<script>
+	 let demos = [];
+	 let timeZero;
+
+	 function time() {
+	     return (Date.now() - timeZero) / 1000;
+	 }
+
+	 function initSlides() {
+	     const slides = document.querySelectorAll('.slide');
+	     for (let k = 0; k < slides.length; k++) {
+		 slides[k].id = 'slide-' + k;
+		 const controls = document.createElement('footer');
+		 controls.className = 'controls';
+		 const back = document.createElement('a');
+		 if (k > 0) {
+		     back.href = '#slide-' + (k - 1);
+		     // back.addEventListener('click', setSlide(k - 1));
+		     back.textContent = 'back';
+		 }
+		 controls.appendChild(back);
+		 const next = document.createElement('a');
+		 if (k < slides.length - 1) {
+		     next.href = '#slide-' + (k + 1);
+		     // next.addEventListener('click', setSlide(k + 1));
+		     next.textContent = 'next';
+		 }
+		 controls.appendChild(next);
+		 slides[k].appendChild(controls);
+	     }
+
+	     const demo = document.getElementById('demo');
+	     demo.width = Math.floor(window.innerWidth / 4);
+	     demo.height = demo.width;
+	 }
+
+	 function initScenes(canvas, engine) {
+	     let scenes = [];
+	     for (let k = 0; k < demos.length; k++) {
+		 scenes[k] = demos[k] ? demos[k](canvas, engine) : null;
+	     }
+	     return scenes;
+	 }
+
+	 function blankScene(canvas, engine) {
+	     let scene = new BABYLON.Scene(engine);
+	     scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+	     let camera = new BABYLON.ArcRotateCamera('camera', 0, 0, 0, BABYLON.Vector3.Zero());
+	     return scene;
+	 }
+
+	 function doRender() {
+	     const antialias = false;
+	     canvas = document.getElementById('demo');
+	     engine = new BABYLON.Engine(canvas, antialias);
+
+	     let scenes = initScenes(canvas, engine);
+	     let blank = blankScene(canvas, engine);
+
+             window.addEventListener('resize', () => {
+                 engine.resize();
+             });
+
+	     timeZero = Date.now();
+	     engine.runRenderLoop(() => {
+		 let k = parseInt(window.location.hash.split('-')[1]);
+		 if (!isNaN(k) && scenes[k]) {
+		     scenes[k].render();
+		 } else {
+		     blank.render();
+		 }
+	     });
+	 }
+
+	 function main() {
+	     initSlides();
+	     doRender();
+	 }
+	 window.addEventListener('load', main);
+	</script>
+	<style>
+	 body {
+	     margin: 0;
+	     padding: 0;
+	 }
+	 #demo {
+	     position: fixed;
+	     right: 5vw;
+	     top: 25vh;
+	 }
+	 .slide {
+	     width: 60vw;
+	     height: 100vh;
+	     position: relative;
+	     margin-left: 5vw;
+	 }
+	 .controls {
+	     position: absolute;
+	     bottom: 5vw;
+	     left: 0;
+	     display: flex;
+	     justify-content: center;
+	     background-color: grey;
+	     border-radius: 5px;
+	 }
+	 .controls > a {
+	     flex: 1;
+	     margin: 1em;
+	     width: 2em;
+	     color: inherit;
+	     text-decoration: none;
+	 }
+	</style>
+    </head>
+    <body>
+	<canvas id="demo"></canvas>
+	<section class="slide">
+	    <h1>Projective Geometry</h1>
+	</section>
+	<section class="slide">
+	    <h2>Linear Transformations</h2>
+	    Using matrices we can for example scale, \[
+	    \begin{pmatrix}
+	    t & 0 & 0 \\
+	    0 & t & 0 \\
+	    0 & 0 & t
+	    \end{pmatrix}
+	    \] and rotate, \[
+	    \begin{pmatrix}
+	    \cos t & 0 & \sin t \\
+	    0 & 1 & 0 \\
+	    -\sin t & 0 & \cos t
+	    \end{pmatrix}
+	    \] our object.
+	    The
+	    <script>
+	     demos.push((c, e) => {
+		 const s = new BABYLON.Scene(e);
+		 new BABYLON.ArcRotateCamera('camera', Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), s);
+		 const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), s);
+		 l.intensity = 0.7;
+		 const box = BABYLON.MeshBuilder.CreateBox("box", {width: 2, height: 1, depth: 1.5, segments: 32}, s);
+		 box.position.y = 2;
+		 const rotate = new BABYLON.Animation('rotate', 'rotation.y', 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+		 rotate.setKeys([{frame: 0, value: 0}, {frame: 30, value: Math.PI}]);
+		 box.animations.push(rotate);
+		 s.beginAnimation(box, 0, 30, true);
+		 BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, s);
+		 return s;
+	     });
+	    </script>
+	</section>
+	<section class="slide">
+	    <h2>Homogeneous coodinates</h2>
+	    <script>
+	     demos.push((c, e) => {
+		 const s = new BABYLON.Scene(e);
+		 new BABYLON.ArcRotateCamera('camera', Math.PI / 2, Math.PI / 3, 10, BABYLON.Vector3.Zero(), s);
+		 const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), s);
+		 l.intensity = 0.7;
+		 const box = BABYLON.MeshBuilder.CreateBox("box", {width: 1, height: 2, depth: 1.5, segments: 32}, s);
+		 box.position.y = 2;
+		 BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, s);
+		 A = BABYLON.Matrix.FromValues(
+		     1, 0, 0, 0,
+		     0, 1, 0, 0,
+		     0, 0, 2, 0,
+		     0, 0, 0, 1);
+		 s.registerBeforeRender(() => {
+		     box._worldMatrix = A;
+		 });
+		 return s;
+	     });
+	    </script>
+	</section>
+    </body>
+</html>
