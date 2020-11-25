@@ -38,17 +38,12 @@
                  slides[k].appendChild(controls);
              }
 
-             const canvas = document.getElementById('canvas');
-             canvas.width = Math.floor(window.innerWidth / 4);
-             canvas.height = canvas.width;
-
              const demos = document.querySelectorAll('.demo');
              for (let k = 0; k < demos.length; k++) {
-                 demos[k].rows = 20;
-                 demos[k].cols = 80;
-                 demos[k].autocomplete = 'off';
+                 // demos[k].rows = 20;
+                 // demos[k].cols = 80;
+                 // demos[k].autocomplete = 'off';
                  eval(demos[k].textContent);
-                 // console.log(d);
              }
          }
 
@@ -69,24 +64,55 @@
 
          function teapotScene(canvas, engine) {
              const scene = new BABYLON.Scene(engine);
-             const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
+             // scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+             const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 16, BABYLON.Vector3.Zero(), scene);
              const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
              l.intensity = 0.7;
+             const material = new BABYLON.StandardMaterial('material', scene);
+             material.backFaceCulling = false;
+             // material.indexOfRefraction = 2.4;
+             // material.specularPower = 0.98;
+             // material.diffuseColor = new BABYLON.Color3(0, 0, 0.5); // (0x41 / 0xFF, 0x69 / 0xFF, 0xE1 / 0xFF);
+             // = material.specularColor
+             // material.ambientColor = material.emissiveColor =
              let teapot = null;
              BABYLON.SceneLoader.ImportMesh('', './newell_teaset/', 'teapot.obj', scene, (meshes) => {
                  teapot = BABYLON.Mesh.MergeMeshes(meshes);
                  teapot.name = 'teapot';
+                 teapot.material = material;
              });
              return scene;
          }
 
+         function planeScene(canvas, engine) {
+             const scene = new BABYLON.Scene();
+             const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 8, BABYLON.Vector3.Zero(), scene);
+             const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
+             l.intensity = 0.7;
+             const transparent = new BABYLON.StandardMaterial('transparent', scene);
+             transparent.alpha = 0.6;
+             transparent.wireframe = true;
+             const plane = BABYLON.MeshBuilder.CreateGround('plane', {width: 4, height: 4}, scene);
+             plane.position.y += 1;
+             plane.material = transparent;
+             const red = new BABYLON.StandardMaterial('red', scene);
+             red.diffuseColor = new BABYLON.Color3(0.9, 0.1, 0.1);
+             const green = new BABYLON.StandardMaterial('green', scene);
+             green.diffuseColor = new BABYLON.Color3(0.1, 0.9, 0.1);
+             const blue = new BABYLON.StandardMaterial('blue', scene);
+             blue.diffuseColor = new BABYLON.Color3(0.1, 0.1, 0.9);
+             return scene;
+         }
+
          function doRender() {
-             const antialias = false;
              canvas = document.getElementById('canvas');
+             canvas.height = canvas.width = Math.floor(window.innerWidth / 4);
+
+             const antialias = false;
              engine = new BABYLON.Engine(canvas, antialias);
 
-             let scenes = initScenes(canvas, engine);
-             let blank = blankScene(canvas, engine);
+             const scenes = initScenes(canvas, engine);
+             const blank = blankScene(canvas, engine);
 
              window.addEventListener('resize', () => {
                  engine.resize();
@@ -94,7 +120,7 @@
 
              timeZero = Date.now();
              engine.runRenderLoop(() => {
-                 let k = parseInt(window.location.hash.split('-')[1]);
+                 const k = parseInt(window.location.hash.split('-')[1]);
                  if (!isNaN(k) && scenes[k]) {
                      scenes[k].render();
                  } else {
@@ -147,6 +173,8 @@
         <canvas id="canvas"></canvas>
         <section class="slide">
             <h1>Projective Geometry</h1>
+            <p>
+            </p>
             <pre class="demo">
 d[0] = (c, e) => {
     const s = teapotScene(c, e);
@@ -169,7 +197,7 @@ d[0] = (c, e) => {
                 0 & 1 & 0 \\
                 -\sin t & 0 & \cos t
                 \end{pmatrix}
-                \] our object by multiplying each vertex with the matrix \(AB\).
+                \] an object by multiplying each of its vertices with the matrix \(AB\).
             </p>
             <pre class="demo">
 d[1] = (c, e) => {
@@ -204,24 +232,25 @@ d[1] = (c, e) => {
                 x \\ y \\ z
                 \end{pmatrix} \quad \Longrightarrow \quad p_H = \begin{pmatrix}
                 x \\ y \\ z \\ 1
-                \end{pmatrix}
-                \] we can also obtain translations, \[
+                \end{pmatrix},
+                \] we can also obtain translations, for example \[
                 C = \begin{pmatrix}
-                1 & 0 & 0 & \cos t \\
+                1 & 0 & 0 & 2 \cos t \\
                 1 & 0 & 0 & 0 \\
-                1 & 0 & 0 & \sin t \\
+                1 & 0 & 0 & 2 \sin t \\
                 0 & 0 & 0 & 1
-                \end{pmatrix}
+                \end{pmatrix}.
                 \]
+                How can we interpret this association of \(p\) with \(p_H\) geometrically?
             </p>
             <pre class="demo">
 d[2] = (c, e) => {
     let s = teapotScene(c, e);
     s.registerBeforeRender(() => {
         C = BABYLON.Matrix.FromValues(
-            1, 0, 0, Math.cos(time()),
+            1, 0, 0, 2 * Math.cos(time()),
             0, 1, 0, 0,
-            0, 0, 1, Math.sin(time()),
+            0, 0, 1, 2 * Math.sin(time()),
             0, 0, 0, 1
         ).transpose();
         let m = s.getMeshByName('teapot');
@@ -239,14 +268,72 @@ d[2] = (c, e) => {
                 Vectors on the form \[
                 p_H = \begin{pmatrix}
                 \lambda x \\ \lambda y \\ \lambda
-                \end{pmatrix}
+                \end{pmatrix},
                 \] where \(\lambda \neq 0\), are said to be the <em>homogeneous coordinates</em> of the point \[
                 p = \begin{pmatrix}
                 x \\ y
-                \end{pmatrix}
+                \end{pmatrix},
                 \] in the two dimensional plane.
                 Each 2D point is thus represented by a one-dimensional subspace (a line) in 3D.
                 In a similar manner, each 3D point can be represented by a one-dimensional subspace of 4D space.
+            </p>
+            <script>
+             d[3] = (c, e) => {
+                 let s = planeScene(c, e);
+                 let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
+                 o.material = s.getMaterialByName('red');
+                 let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
+                 p.material = s.getMaterialByName('blue');
+                 let l = BABYLON.MeshBuilder.CreateLines('l', {points: [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()], updatable: true}, s);
+                 s.registerBeforeRender(() => {
+                     p.position.x = 2 * Math.cos(time() / 2);
+                     p.position.y = 1;
+                     p.position.z = Math.sin(time() / 2);
+                     l = BABYLON.MeshBuilder.CreateLines('l', {points: [p.position.scale(-10), p.position.scale(10)], instance: l}, s);
+                 });
+                 return s;
+             };
+            </script>
+        </section>
+        <section class="slide">
+            <h2>Homogeneous coordinates</h2>
+            <p>
+                We see that the 2D point \(p\) is given by the intersection between \(p_H\) and the plane \[
+                p_H \cdot \begin{pmatrix} 0 & 0 & 1 \end{pmatrix} = 1,
+                \] but what happends for \[
+                p_H = \begin{pmatrix}
+                \lambda x \\ \lambda y \\ 0
+                \end{pmatrix}?
+                \]
+                These lines can be seen as representing <em>points at infinity</em>, in the direction given by \(x\) and \(y\).
+            </p>
+            <script>
+             d[4] = (c, e) => {
+                 let s = planeScene(c, e);
+                 let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
+                 o.material = s.getMaterialByName('red');
+                 let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
+                 p.material = s.getMaterialByName('blue');
+                 let l = BABYLON.MeshBuilder.CreateLines('l', {points: [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()], updatable: true}, s);
+                 let m = BABYLON.MeshBuilder.CreateLines('m', {points: [new BABYLON.Vector3(0, 0, -1000), new BABYLON.Vector3(0, 0, 100)]}, s);
+                 s.registerBeforeRender(() => {
+                     p.position.x = -1;
+                     p.position.y = 1;
+                     p.position.z = 1 / (1 - Math.abs(Math.sin(time())));
+                     l = BABYLON.MeshBuilder.CreateLines('l', {points: [p.position.scale(-10), p.position.scale(10)], instance: l}, s);
+                 });
+                 return s;
+             };
+            </script>
+        </section>
+        <section class="slide">
+            <h2>Representation of lines and planes</h2>
+            <p>
+                This representation of points in 2D also gives a simple representation of lines in 2D:
+                The line containing points (represented by) \(p_H\) and \(q_H\) is represented by the two-dimensional subspace \(l_H\) containing both \(p_H\) and \(q_H\).
+                The normal vector of this plane in 3D is easily computed as the scalar product \[
+                p_H \times q_H
+                \]
             </p>
         </section>
     </body>
