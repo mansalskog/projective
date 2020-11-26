@@ -15,6 +15,24 @@
 	     return (Date.now() - timeZero) / 1000;
          }
 
+         function slideNumber() {
+             return parseInt(window.location.hash.split('-')[1]) || 0;
+         }
+
+         function updateHash(slides) {
+             return (event) => {
+                 const margin = 10;
+                 for (let k = 0; k < slides.length; k++) {
+                     if (window.scrollY > slides[k].offsetTop + margin && (k + 1 >= slides.length || window.scrollY < slides[k + 1].offsetTop - margin)) {
+                         if (slideNumber() != k) {
+                             window.history.replaceState(null, null, '#slide-' + k);
+                         }
+                         break;
+                     }
+                 }
+             };
+         }
+
          function initSlides() {
              const slides = document.querySelectorAll('.slide');
              for (let k = 0; k < slides.length; k++) {
@@ -40,6 +58,8 @@
                  controls.appendChild(next);
                  slides[k].appendChild(controls);
              }
+
+             window.addEventListener('scroll', updateHash(slides));
 
              const demos = document.querySelectorAll('.demo');
              for (let k = 0; k < demos.length; k++) {
@@ -169,7 +189,7 @@
 
              timeZero = Date.now();
              engine.runRenderLoop(() => {
-                 const k = parseInt(window.location.hash.split('-')[1]) || 0;
+                 const k = slideNumber();
                  if (scenes[k]) {
                      scenes[k].render();
                  } else {
@@ -284,12 +304,12 @@ d[1] = (c, e) => {
                 x \\ y \\ z \\ 1
                 \end{bmatrix},
                 \] we can also obtain translations, for example by \[
-                C = \begin{pmatrix}
+                C = \begin{bmatrix}
                 1 & 0 & 0 & 2 \cos t \\
                 1 & 0 & 0 & 0 \\
                 1 & 0 & 0 & 2 \sin t \\
                 0 & 0 & 0 & 1
-                \end{pmatrix}.
+                \end{bmatrix}.
                 \]
                 How can we interpret this association of \(p\) with \(p_H\) geometrically?
             </p>
@@ -549,11 +569,39 @@ d[2] = (c, e) => {
             </p>
         </section>
         <section class="slide">
+            <h2>Representing planes in 3D, continued</h2>
+            <p>
+                We know that a plane in 3D is characterized by three points.
+                To find the plane which contains three given points \(p_H, q_H, r_H\) we need to find a solution \(\pi_H\) to the system \[
+                \begin{cases}
+                p_H \cdot \pi_H = 0, \\
+                q_H \cdot \pi_H = 0, \\
+                r_H \cdot \pi_H = 0,
+                \end{cases}
+                \] which is equvalent to \[
+                \begin{bmatrix}
+                - & p_H^T & - \\
+                - & q_H^T & - \\
+                - & r_H^T & -
+                \end{bmatrix} \pi_H = 0,
+                \] meaning that \(\pi_H\) is given by (an arbitrary vector in) the null space of the matrix above.
+            </p>
+            <p>
+                Because of duality, we can easily find the point of intersection of three planes \(\pi_H, \rho_H, \sigma_H\) in the null space of \[
+                \begin{bmatrix}
+                - & \pi_H^T & - \\
+                - & \rho_H^T & - \\
+                - & \sigma_H^T & -
+                \end{bmatrix}.
+                \]
+            </p>
+        </section>
+        <section class="slide">
             <h2>Representing lines in 3D</h2>
             <p>
-                In 3D we can no longer represent lines in this way.
-
-                Instead there are various different methods of representing a line, one of which is the <em>Plücker matrix</em>.
+                In 3D lines have more degrees of freedom than a point has.
+                Therefore their representation becomes more complicated, and there are various different methods of representing a line,
+                one of which is the <em>Plücker matrix</em>.
                 To represent a line between \(p_H\) and \(q_H\), the matrix \[
                 L_H = p_H q_H^T - q_H p_H^T
                 \] is used.
@@ -561,11 +609,18 @@ d[2] = (c, e) => {
                 L_H^T = (p_H q_H^T)^T - (q_H p_H^T)^T = q_H p_H^T - p_H q_H^T = -L_H.
                 \]
             </p>
+            <p>
+                This representation gives a number of nice formulas:
+                \begin{align*}
+                p_H \in L_H \quad \Longleftrightarrow L_H \pi_H = 0,
+                L_H \subset \pi_H \quad \Longleftrightarrow L_H \pi_H = 0,
+                \end{align*}
+            </p>
         </section>
         <section class="slide">
             <h2>Circles, ellipses, parabolas and hyperbolas</h2>
 
-
+            <!--
             <script>
              d[7] = (c, e) => {
                  let s = planeScene(c, e);
@@ -583,6 +638,7 @@ d[2] = (c, e) => {
                  return s;
              }
             </script>
+            -->
         </section>
         <section class="slide">
             <h2>Computational advantages of projective geometry</h2>
