@@ -169,8 +169,8 @@
 
              timeZero = Date.now();
              engine.runRenderLoop(() => {
-                 const k = parseInt(window.location.hash.split('-')[1]);
-                 if (!isNaN(k) && scenes[k]) {
+                 const k = parseInt(window.location.hash.split('-')[1]) || 0;
+                 if (scenes[k]) {
                      scenes[k].render();
                  } else {
                      blank.render();
