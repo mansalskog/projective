@@ -89,6 +89,12 @@
              return scene;
          }
 
+         function loadTeapot(scene, callback) {
+             BABYLON.SceneLoader.ImportMesh('', './newell_teaset/', 'teapot.obj', scene, (meshes) => {
+                 callback(BABYLON.Mesh.MergeMeshes(meshes));
+             });
+         }
+
          function teapotScene(canvas, engine) {
              const scene = new BABYLON.Scene(engine);
              // scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
@@ -103,10 +109,10 @@
              // = material.specularColor
              // material.ambientColor = material.emissiveColor =
              let teapot = null;
-             BABYLON.SceneLoader.ImportMesh('', './newell_teaset/', 'teapot.obj', scene, (meshes) => {
-                 teapot = BABYLON.Mesh.MergeMeshes(meshes);
-                 teapot.name = 'teapot';
-                 teapot.material = material;
+             loadTeapot(scene, t => {
+                 t.name = 'teapot';
+                 t.material = material;
+                 teapot = t;
              });
              return scene;
          }
@@ -171,6 +177,22 @@
              cones[1].position.y -= h / 2;
              cones[1].rotation.x = Math.PI;
              return BABYLON.Mesh.MergeMeshes(cones);
+         }
+
+         function projectMesh(mesh) {
+             let pos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+             let matrix = mesh.getWorldMatrix();
+             let path = [];
+             for (let k = 0; k < pos.length; k += 3) {
+                 let vertex = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(pos[k], pos[k + 1], pos[k + 2]), matrix);
+                 if (Math.abs(vertex.z) > 0) {
+                     // vertex.x *= 3 / Math.abs(vertex.z);
+                     // vertex.y *= 3 / Math.abs(vertex.z);
+                 }
+                 vertex.z = 1;
+                 path.push(vertex);
+             }
+             return path;
          }
 
          function doRender() {
@@ -287,7 +309,7 @@ d[1] = (c, e) => {
         ).transpose();
         let m = s.getMeshByName('teapot');
         if (m) {
-            m.setPivotMatrix(B.multiply(A), false);
+            m.setPivotMatrix(A.multiply(B), false);
         }
     });
     return s;
@@ -373,47 +395,6 @@ d[2] = (c, e) => {
              };
             </script>
         </section>
-        <!--
-             <section class="slide">
-             <p>
-             Geometrically, this means projecting the lines onto the plane parallel to the \(xy\) plane with \(z = 1\).
-             </p>
-             <script class="demo">
-             d[4] = (c, e) => {
-             let s = teapotScene(c, e);
-             let p = BABYLON.MeshBuilder.CreatePlane('p', {size: 5}, s);
-             // p.rotation.x = Math.PI / 2;
-             p.position.z += 3;
-             p.position.y += 1;
-             const material = new BABYLON.StandardMaterial('material', s);
-             material.alpha = 0.6;
-             material.backFaceCulling = false;
-             p.material = material;
-             T = BABYLON.Matrix.FromValues(
-             1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, -2,
-             0, 0, 0, 1
-             ).transpose();
-             P = BABYLON.Matrix.FromValues(
-             1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, 0,
-             0, 1, 0, 1
-             ).transpose();
-             s.registerBeforeRender(() => {
-             let camera = s.getCameraByName('camera');
-             camera.alpha = time();
-             let m = s.getMeshByName('teapot');
-             if (m) {
-             m.setPivotMatrix(T.multiply(P), false);
-             }
-             });
-             return s;
-             };
-             </script>
-             </section>
-        -->
         <section class="slide">
             <h2>Points at infinity</h2>
             <p>
@@ -488,7 +469,7 @@ d[2] = (c, e) => {
                 4 \\ -2 \\ 0
                 \end{bmatrix}.
                 \]
-                In the interpretation of projective geometry, the \(l\) and \(m\) meet some point at infinity \(p\).
+                In the interpretation of projective geometry, \(l\) and \(m\) meet some point at infinity \(p\).
                 In fact, any line parallel to \(l\) will meet it at \(p\).
             </p>
             <p>
@@ -572,6 +553,37 @@ d[2] = (c, e) => {
                 \]
                 This also applies when transforming lines in 2D, as both \(\tilde{l}\) and \(\tilde{\pi}\) are essentially normal vectors of the line or plane they represent.
             </p>
+            <!--
+            <script class="demo">
+             d[6] = (c, e) => {
+                 let s = teapotScene(c, e);
+                 let camera = s.getCameraByName('camera');
+                 camera.alpha = Math.PI / 5;
+                 const material = new BABYLON.StandardMaterial('material', s);
+                 material.alpha = 0.6;
+                 material.backFaceCulling = false;
+                 material.wireframe = true;
+                 let proj = null;
+                 s.registerBeforeRender(() => {
+                     // camera.alpha = time();
+                     let m = s.getMeshByName('teapot');
+                     if (m) {
+                         m.material = material;
+                         m.position.z = -5;
+                         m.rotation.y = time();
+                         let path = projectMesh(m);
+                         if (!proj) {
+                             proj = new BABYLON.MeshBuilder.CreateLines('proj', {points: path, updatable: true}, s);
+                             proj.color = RED;
+                         } else {
+                             proj = new BABYLON.MeshBuilder.CreateLines('proj', {points: path, instance: proj}, s);
+                         }
+                     }
+                 });
+                 return s;
+             };
+            </script>
+            -->
         </section>
         <section class="slide">
             <h2>Representing planes in 3D, continued</h2>
@@ -729,6 +741,30 @@ d[2] = (c, e) => {
                 The extra coordinate means we must store more data, but it allows us to postpone divisions as long as possible,
                 as this can be accomplished by simply multiplying the third coordinate.
                 This in turn gives improved precision, and it's even possible to use integer arithmetic in many places.
+                \[
+                \begin{pmatrix}
+                3/5 & 4/5 \\
+                -4/5 & 3/5
+                \end{pmatrix} \begin{pmatrix}
+                5/13 \\ 12/13
+                \end{pmatrix} = \begin{bmatrix}
+                3/5 & 4/5 & 0 \\
+                -4/5 & 3/5 & 0 \\
+                0 & 0 & 1
+                \end{bmatrix} \begin{bmatrix}
+                5/13 \\ 12/13 \\ 1
+                \end{bmatrix} = \begin{bmatrix}
+                3 & 4 & 0 \\
+                -4 & 3 & 0 \\
+                0 & 0 & 5
+                \end{bmatrix} \begin{bmatrix}
+                5 \\ 12 \\ 13
+                \end{bmatrix} = \begin{bmatrix}
+                63 \\ 16 \\ 65
+                \end{bmatrix} = \begin{pmatrix}
+                63/65 \\ 16/65
+                \end{pmatrix}
+                \]
             </p>
             <p>
                 Similarily, points at infinity allow us to handle special cases without any extra code.
