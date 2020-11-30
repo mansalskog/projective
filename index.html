@@ -369,6 +369,7 @@
         <section class="slide">
             <h2>Linear Transformations</h2>
             <p>
+                \(\newcommand{\hom}{\boldsymbol}\)
                 Using matrices we can for example rotate, \[
                 B = \begin{pmatrix}
                 \cos t & 0 & \sin t \\
@@ -414,20 +415,20 @@
                 By adding an extra coordinate to the vertices, \[
                 p = \begin{pmatrix}
                 x \\ y \\ z
-                \end{pmatrix} \quad \Longrightarrow \quad \tilde{p} = \begin{bmatrix}
+                \end{pmatrix} \quad \Longrightarrow \quad \hom{p} = \begin{bmatrix}
                 x \\ y \\ z \\ 1
                 \end{bmatrix},
                 \] we can also obtain translations, for example by \[
                 C = \begin{bmatrix}
                 1 & 0 & 0 & 2 \cos t \\
-                1 & 0 & 0 & 0 \\
-                1 & 0 & 0 & 2 \sin t \\
+                0 & 1 & 0 & 0 \\
+                0 & 0 & 1 & 2 \sin t \\
                 0 & 0 & 0 & 1
-                \end{bmatrix} \quad \Longrightarrow \quad C \tilde{p} = \begin{bmatrix}
-                x + 2 \cos t \\ y \\ z + 2 \cos t \\ 1
+                \end{bmatrix} \quad \Longrightarrow \quad C \hom{p} = \begin{bmatrix}
+                x + 2 \cos t \\ y \\ z + 2 \sin t \\ 1
                 \end{bmatrix}
                 \]
-                How can we interpret this association of \(p\) with \(\tilde{p}\) geometrically?
+                How can we interpret this association of \(p\) with \(\hom{p}\) geometrically?
             </p>
             <script>
              d[2] = (c, e) => {
@@ -458,7 +459,7 @@
                 \lambda x \\ \lambda y \\ \lambda
                 \end{pmatrix} : \lambda \in \mathbf{R} \right\},
                 \] with any representative \[
-                \tilde{p} = \begin{bmatrix}
+                \hom{p} = \begin{bmatrix}
                 \lambda x \\ \lambda y \\ \lambda
                 \end{bmatrix} \quad \text{for a fixed } \lambda \neq 0.
                 \]
@@ -505,10 +506,10 @@
         <section class="slide">
             <h2>Points at infinity</h2>
             <p>
-                We see that the 2D point \(p\) is given by the intersection between \(\tilde{p}\) and the plane parallel
+                We see that the 2D point \(p\) is given by the intersection between \(\hom{p}\) and the plane parallel
                 to the \(xy\) plane with \(z = 1\), called the <em>viewing plane</em>.
                 What happens for \[
-                \tilde{p} = \begin{bmatrix}
+                \hom{p} = \begin{bmatrix}
                 x \\ y \\ 0
                 \end{bmatrix}?
                 \]
@@ -518,27 +519,29 @@
                 In one dimension there is only one point at infinity, commonly denoted \(\infty\).
                 In two dimensions there is <em>line at infinity</em> and in three dimensions a <em>plane at infinity</em>.
             </p>
-            <p>
-                <strong>Note:</strong> sometimes these points are interpreted as vectors, as \[
-                \begin{bmatrix}
-                x \\ y \\ 1
-                \end{bmatrix} - \begin{bmatrix}
-                z \\ w \\ 1
-                \end{bmatrix} = \begin{bmatrix}
-                x - z \\ y - w \\ 0
-                \end{bmatrix}
-                \] and \[
-                \begin{bmatrix}
-                x \\ y \\ 1
-                \end{bmatrix} + \begin{bmatrix}
-                \Delta x \\ \Delta y \\ 0
-                \end{bmatrix} = \begin{bmatrix}
-                x + \Delta x \\ y + \Delta y \\ 1
-                \end{bmatrix},
-                \]
-                however this is not really supported by the theory
-                and can result in errors when combined with other transformations.
-            </p>
+            <!--
+                 <p>
+                 <strong>Note:</strong> sometimes these points are interpreted as vectors, as \[
+                 \begin{bmatrix}
+                 x \\ y \\ 1
+                 \end{bmatrix} - \begin{bmatrix}
+                 z \\ w \\ 1
+                 \end{bmatrix} = \begin{bmatrix}
+                 x - z \\ y - w \\ 0
+                 \end{bmatrix}
+                 \] and \[
+                 \begin{bmatrix}
+                 x \\ y \\ 1
+                 \end{bmatrix} + \begin{bmatrix}
+                 \Delta x \\ \Delta y \\ 0
+                 \end{bmatrix} = \begin{bmatrix}
+                 x + \Delta x \\ y + \Delta y \\ 1
+                 \end{bmatrix},
+                 \]
+                 however this is not really supported by the theory
+                 and can result in errors when combined with other transformations.
+                 </p>
+            -->
             <script>
              d[4] = (c, e) => {
                  let s = planeScene(c, e);
@@ -564,13 +567,13 @@
             <h2>Representation of lines in 2D</h2>
             <p>
                 This representation of points in 2D also gives a simple representation of lines in 2D:
-                The line containing points with homogeneous coordinates \(\tilde{p}\) and \(\tilde{q}\) is has homogeneous coordinates given by
-                the two-dimensional subspace with normal vector \(\tilde{l}\),
-                containing both \(\tilde{p}\) and \(\tilde{q}\).
+                The line containing points with homogeneous coordinates \(\hom{p}\) and \(\hom{q}\) is has homogeneous coordinates given by
+                the two-dimensional subspace with normal vector \(\hom{l}\),
+                containing both \(\hom{p}\) and \(\hom{q}\).
             </p>
             <p>
                 The normal vector of this plane in 3D is easily computed as the scalar product \[
-                \tilde{p} \times \tilde{q} = \begin{bmatrix}
+                \hom{p} \times \hom{q} = \begin{bmatrix}
                 \lambda x \\ \lambda y \\ \lambda
                 \end{bmatrix} \times \begin{bmatrix}
                 \mu z \\ \mu w \\ \mu
@@ -578,12 +581,12 @@
                 \lambda \mu (y-w) \\
                 \lambda \mu (z-x) \\
                 \lambda \mu (xw-yz)
-                \end{bmatrix} = \tilde{l},
+                \end{bmatrix} = \hom{l},
                 \] where we identify any normal vector of the plane with the plane itself.
             </p>
             <p>
-                <strong>Remark:</strong> if the two points are the same, then \(\tilde{p} = \lambda \tilde{q}\) for some \(\lambda\),
-                and \(\tilde{p} \times \tilde{q} = 0\), signifying the fact that there are infinitely many lines containing \(p\) and \(q\).
+                <strong>Remark:</strong> if the two points are the same, then \(\hom{p} = \lambda \hom{q}\) for some \(\lambda\),
+                and \(\hom{p} \times \hom{q} = 0\), signifying the fact that there are infinitely many lines containing \(p\) and \(q\).
             </p>
             <script>
              d[5] = (c, e) => {
@@ -631,18 +634,18 @@
             <h2>Intersection of lines in 2D</h2>
             <p>
                 Finding the point where two lines \(l\) and \(m\) intersect simply amounts to finding the intersection between
-                the planes with normal vectors \(\tilde{l}\) and \(\tilde{m}\), which can be done with the cross product, \[
-                \tilde{p} = \tilde{l} \times \tilde{m}.
+                the planes with normal vectors \(\hom{l}\) and \(\hom{m}\), which can be done with the cross product, \[
+                \hom{p} = \hom{l} \times \hom{m}.
                 \]
                 The fact that points and lines are essentially interchangeable in 2D is called <em>duality</em>.
             </p>
             <p>
                 What happens if the two lines are parallel? For example, consider \[
-                \tilde{l} = \begin{bmatrix}
+                \hom{l} = \begin{bmatrix}
                 1 \\ 2 \\ 3
-                \end{bmatrix} \quad \text{and} \quad \tilde{m} = \begin{bmatrix}
+                \end{bmatrix} \quad \text{and} \quad \hom{m} = \begin{bmatrix}
                 1 \\ 2 \\ 5
-                \end{bmatrix} \quad \Longrightarrow \quad \tilde{p} = \tilde{l} \times \tilde{m} = \begin{bmatrix}
+                \end{bmatrix} \quad \Longrightarrow \quad \hom{p} = \hom{l} \times \hom{m} = \begin{bmatrix}
                 4 \\ -2 \\ 0
                 \end{bmatrix}.
                 \]
@@ -650,43 +653,46 @@
                 In fact, any line parallel to \(l\) will meet it at \(p\).
             </p>
             <p>
-                <strong>Remark</strong> If the lines are coincident (i.e. the same line),
+                <strong>Remark:</strong> If the lines are coincident (i.e. the same line),
                 the cross product of the homogeneous coordinates is zero.
                 The converse is also true.
             </p>
             <script>
-                d[6] = (c, e) => {
-                let s = planeScene(c, e);
-                let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
-                o.material = s.getMaterialByName('red');
-                let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
-                p.material = s.getMaterialByName('black');
-                let l0 = new BABYLON.Vector3(1, 1, -2);
-                let l1 = new BABYLON.Vector3(-2, 1, 0);
-                let l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], updatable: true}, s);
-                l.color = GREEN;
-                let lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l0, l1], updatable: true}, s);
-                lnorm.color = GREEN;
-                let n0 = new BABYLON.Vector3(2, 1, 2);
-                let n1 = new BABYLON.Vector3(-2, 1, -2);
-                let n = BABYLON.MeshBuilder.CreateLines('n', {points: [n0, n1]}, s);
-                n.color = BLUE;
-                let nn = n1.cross(n0);
-                nn.normalize()
-                let nnorm = BABYLON.MeshBuilder.CreateLines('norm', {points: [n0, n0.add(nn)]}, s);
-                nnorm.color = BLUE;
-                s.registerBeforeRender(() => {
-                // s.getCameraByName('camera').alpha = time();
-                l0.z = -2 * Math.sin(time());
-                l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], instance: l}, s);
-                let ln = l1.cross(l0);
-                ln.normalize();
-                lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l1, l1.add(ln)], instance: lnorm}, s);
-                p.position = nn.cross(ln);
-                p.position.scaleInPlace(1 / p.position.y);
-                });
-                return s;
-                };
+             d[6] = (c, e) => {
+                 let s = planeScene(c, e);
+                 let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
+                 o.material = s.getMaterialByName('red');
+                 let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
+                 p.material = s.getMaterialByName('black');
+                 let m = BABYLON.MeshBuilder.CreateLines('m', {points: [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()], updatable: true}, s);
+                 m.color = BLACK;
+                 let l0 = new BABYLON.Vector3(1, 1, -2);
+                 let l1 = new BABYLON.Vector3(-2, 1, 0);
+                 let l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], updatable: true}, s);
+                 l.color = GREEN;
+                 let lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l0, l1], updatable: true}, s);
+                 lnorm.color = GREEN;
+                 let n0 = new BABYLON.Vector3(2, 1, 2);
+                 let n1 = new BABYLON.Vector3(-2, 1, -2);
+                 let n = BABYLON.MeshBuilder.CreateLines('n', {points: [n0, n1]}, s);
+                 n.color = BLUE;
+                 let nn = n1.cross(n0);
+                 nn.normalize()
+                 let nnorm = BABYLON.MeshBuilder.CreateLines('norm', {points: [n0, n0.add(nn)]}, s);
+                 nnorm.color = BLUE;
+                 s.registerBeforeRender(() => {
+                     // s.getCameraByName('camera').alpha = time();
+                     l0.z = -2 * Math.sin(time());
+                     l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], instance: l}, s);
+                     let ln = l1.cross(l0);
+                     ln.normalize();
+                     lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l1, l1.add(ln)], instance: lnorm}, s);
+                     p.position = nn.cross(ln);
+                     p.position.scaleInPlace(1 / p.position.y);
+                     m = BABYLON.MeshBuilder.CreateLines('m', {points: [p.position.scale(-0.5), p.position.scale(1.5)], instance: m}, s);
+                 });
+                 return s;
+             };
             </script>
         </section>
         <section class="slide">
@@ -706,11 +712,11 @@
             </p>
             <p>
                 In homogeneous coordinates this can be expressed as \[
-                p \in \pi \quad \Longleftrightarrow \quad \tilde{p} \cdot \tilde{\pi} = 0,
+                p \in \pi \quad \Longleftrightarrow \quad \hom{p} \cdot \hom{\pi} = 0,
                 \] where \[
-                \tilde{p} = \begin{bmatrix}
+                \hom{p} = \begin{bmatrix}
                 x \\ y \\ z \\ 1
-                \end{bmatrix} \quad \text{and} \quad \tilde{\pi} = \begin{bmatrix}
+                \end{bmatrix} \quad \text{and} \quad \hom{\pi} = \begin{bmatrix}
                 a \\ b \\ c \\ d
                 \end{bmatrix}.
                 \]
@@ -723,17 +729,17 @@
                 The same is true for lines in 2D.
             </p>
             <p>
-                Let \(\tilde{p}' = A \tilde{p}\) and \(\tilde{\pi}' = A \tilde{\pi}\). Then the equation of the transformed plane becomes \[
-                0 = \tilde{p}' \cdot \tilde{\pi}' = (A \tilde{p}) \cdot (A \tilde{\pi}) = (A \tilde{p})^T (A \tilde{\pi}) = \tilde{p} A^T A \tilde{\pi},
+                Let \(\hom{p}' = A \hom{p}\) and \(\hom{\pi}' = A \hom{\pi}\). Then the equation of the transformed plane becomes \[
+                0 = \hom{p}' \cdot \hom{\pi}' = (A \hom{p}) \cdot (A \hom{\pi}) = (A \hom{p})^T (A \hom{\pi}) = \hom{p}^T A^T A \hom{\pi},
                 \] but this is not the same plane as \[
-                0 = \tilde{p} \cdot \tilde{\pi}.
+                0 = \hom{p} \cdot \hom{\pi}.
                 \]
-                The solution is to transform planes by the inverse of the transpose of \(A\), so that \(\tilde{\pi}' = (A^T)^{-1} \tilde{\pi}\), and the equation becomes \[
-                0 = \tilde{p}' \cdot \tilde{\pi}'
-                = (A \tilde{p}) \cdot ((A^T)^{-1} \tilde{\pi})
-                = (A \tilde{p})^T ((A^T)^{-1} \tilde{\pi})
-                = \tilde{p} A^T (A^T)^{-1} \tilde{\pi}
-                = \tilde{p} \cdot \tilde{\pi}.
+                The solution is to transform planes by the inverse of the transpose of \(A\), so that \(\hom{\pi}' = (A^T)^{-1} \hom{\pi}\), and the equation becomes \[
+                0 = \hom{p}' \cdot \hom{\pi}'
+                = (A \hom{p}) \cdot ((A^T)^{-1} \hom{\pi})
+                = (A \hom{p})^T ((A^T)^{-1} \hom{\pi})
+                = \hom{p}^T A^T (A^T)^{-1} \hom{\pi}
+                = \hom{p} \cdot \hom{\pi}.
                 \]
             </p>
             <p>
@@ -750,11 +756,11 @@
                 resulting in lighting artifacts (as light reflecting off the object is computed using surface normals).
             </p>
             <!--
-            <p>
-                <strong>Remark:</strong> Somethimes the notation \(A^{-T}\) is used, as \[
-                (A^T)^{-1} = (A^T)^{-1} (A^{-1} A)^T = (A^T)^{-1} A^T (A^{-1})^T = (A^{-1})^T.
-                \]
-            </p>
+                 <p>
+                 <strong>Remark:</strong> Somethimes the notation \(A^{-T}\) is used, as \[
+                 (A^T)^{-1} = (A^T)^{-1} (A^{-1} A)^T = (A^T)^{-1} A^T (A^{-1})^T = (A^{-1})^T.
+                 \]
+                 </p>
             -->
             <script>
              d[8] = (c, e) => {
@@ -834,28 +840,28 @@
             <h2>Representing planes in 3D, continued</h2>
             <p>
                 We know that a plane in 3D is characterized by three points.
-                To find the plane which contains three given points \(p\), \(q\) and \(r\) we need to find a solution \(\tilde{\pi}\) to the system \[
+                To find the plane which contains three given points \(p\), \(q\) and \(r\) we need to find a solution \(\hom{\pi}\) to the system \[
                 \begin{cases}
-                \tilde{p} \cdot \tilde{\pi} = 0, \\
-                \tilde{q} \cdot \tilde{\pi} = 0, \\
-                \tilde{r} \cdot \tilde{\pi} = 0,
+                \hom{p} \cdot \hom{\pi} = 0, \\
+                \hom{q} \cdot \hom{\pi} = 0, \\
+                \hom{r} \cdot \hom{\pi} = 0,
                 \end{cases}
                 \] which is equvalent to \[
                 \underbrace{\begin{bmatrix}
-                - & \tilde{p}^T & - \\
-                - & \tilde{q}^T & - \\
-                - & \tilde{r}^T & -
-                \end{bmatrix}}_{= A} \tilde{\pi} = 0,
-                \] meaning that \(\tilde{\pi}\) is given by (an arbitrary vector in) the null space of the matrix above.
+                - & \hom{p}^T & - \\
+                - & \hom{q}^T & - \\
+                - & \hom{r}^T & -
+                \end{bmatrix}}_{= A} \hom{\pi} = 0,
+                \] meaning that \(\hom{\pi}\) is given by (an arbitrary vector in) the null space of the matrix above.
                 If we require that the three points be non-collinear then we have a \(3 \times 4\) matrix with distinct rows, so \(\operatorname{rank} A = 3\),
                 and the null space is one-dimensional.
             </p>
             <p>
                 Because of duality, we can easily find the (dual coordinates of the) point of intersection of three planes \(\pi\), \(\rho\), and \(\sigma\) in the null space of \[
                 B = \begin{bmatrix}
-                - & \tilde{\pi}^T & - \\
-                - & \tilde{\rho}^T & - \\
-                - & \tilde{\sigma}^T & -
+                - & \hom{\pi}^T & - \\
+                - & \hom{\rho}^T & - \\
+                - & \hom{\sigma}^T & -
                 \end{bmatrix}.
                 \]
             </p>
@@ -887,40 +893,40 @@
                 \end{bmatrix} = 0,
                 \]
                 so the null space of \(A\) is exactly \(\operatorname{span} v_4\),
-                and we can take \(\tilde{\pi} = v_4\) to be a representative of the plane.
+                and we can take \(\hom{\pi} = v_4\) to be a representative of the plane.
             </p>
             <p>
-                <strong>Note:</strong> another method of computing \(\tilde{\pi}\) is solving the equation (using <em>index set</em> notation), \[
-                A[\{1,2,3\},\{1,2,3\}] \underbrace{v}_{3 \times 1} = -A[\{1,2,4\},\{4\}] \quad \text{and setting} \quad \tilde{\pi} = \begin{bmatrix} v \\ 1 \end{bmatrix}.
+                <strong>Note:</strong> another method of computing \(\hom{\pi}\) is solving the equation (using <em>index set</em> notation), \[
+                A[\{1,2,3\},\{1,2,3\}] \underbrace{v}_{3 \times 1} = -A[\{1,2,3\},\{4\}] \quad \text{and setting} \quad \hom{\pi} = \begin{bmatrix} v \\ 1 \end{bmatrix}.
                 \]
             </p>
         </section>
         <section class="slide">
             <h2>Representing lines in 3D</h2>
             <p>
-                In 3D lines have more degrees of freedom than a point has.
+                In 3D lines have more degrees of freedom than a point has (4 compared to 3).
                 Therefore their representation becomes more complicated, and there are various different methods of representing a line,
                 one of which is the <em>Pl&uuml;cker matrix</em>.
                 To represent a line between \(p\) and \(q\), called the <em>join</em> of the points, the matrix \[
-                \tilde{L} = \tilde{p} \tilde{q}^T - \tilde{q} \tilde{p}^T
+                \hom{L} = \hom{p} \hom{q}^T - \hom{q} \hom{p}^T
                 \] is used.
                 We see that this is an antisymmetric matrix, \[
-                \tilde{L}^T = (\tilde{p} \tilde{q}^T)^T - (\tilde{q} \tilde{p}^T)^T = \tilde{q} \tilde{p}^T - \tilde{p} \tilde{q}^T = -\tilde{L},
+                \hom{L}^T = (\hom{p} \hom{q}^T)^T - (\hom{q} \hom{p}^T)^T = \hom{q} \hom{p}^T - \hom{p} \hom{q}^T = -\hom{L},
                 \] and that it is indepentent of which representatives of the points are used, \[
-                (\lambda \tilde{p}) (\mu \tilde{q})^T - (\mu \tilde{q}) (\lambda \tilde{p})^T
-                = \lambda \mu (\tilde{p} \tilde{q}^T - \tilde{q} \tilde{p}^T)
-                = \lambda \mu \tilde{L}.
+                (\lambda \hom{p}) (\mu \hom{q})^T - (\mu \hom{q}) (\lambda \hom{p})^T
+                = \lambda \mu (\hom{p} \hom{q}^T - \hom{q} \hom{p}^T)
+                = \lambda \mu \hom{L}.
                 \]
                 The <em>dual Pl&uuml;cker matrix</em> is given by \[
-                \tilde{L}^* = \tilde{\pi} \tilde{\rho}^T - \tilde{\rho} \tilde{\pi}^T,
+                \hom{L}^* = \hom{\pi} \hom{\rho}^T - \hom{\rho} \hom{\pi}^T,
                 \] and represents the line given by the intersection of the planes \(\pi\) and \(\rho\), called the <em>meet</em> of the planes.
             </p>
             <p>
                 \begin{align}
-                p \in L \quad \Longleftrightarrow \quad &\tilde{L}^* \tilde{p} = 0, \\
-                L \subset \pi \quad \Longleftrightarrow \quad &\tilde{L} \tilde{\pi} = 0, \\
-                \text{the join of } p \text{ and } L \text{ is} \qquad &\tilde{\pi} = \tilde{L}^* \tilde{p}, \\
-                \text{the meet of } L \text{ and } \pi \text{ is} \qquad &\tilde{p} = \tilde{L} \tilde{\pi}.
+                p \in L \quad \Longleftrightarrow \quad &\hom{L}^* \hom{p} = 0, \\
+                L \subset \pi \quad \Longleftrightarrow \quad &\hom{L} \hom{\pi} = 0, \\
+                \text{the join of } p \text{ and } L \text{ is} \qquad &\hom{\pi} = \hom{L}^* \hom{p}, \\
+                \text{the meet of } L \text{ and } \pi \text{ is} \qquad &\hom{p} = \hom{L} \hom{\pi}.
                 \end{align}
             </p>
         </section>
@@ -928,7 +934,7 @@
             <h2>Pl&uuml;cker lines</h2>
             <p>
                 If we study the elements of the Pl&uuml;cker matrix for two points \(p\) and \(q\), we see that they will be on the form \[
-                \tilde{L} = \begin{bmatrix}
+                \hom{L} = \begin{bmatrix}
                 p_x \\ p_y \\ p_z \\ 1
                 \end{bmatrix} \begin{bmatrix}
                 q_x & q_y & q_z & 1
