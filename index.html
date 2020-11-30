@@ -720,6 +720,8 @@
                 a \\ b \\ c \\ d
                 \end{bmatrix}.
                 \]
+                <strong>Note:</strong> If \(\hom{p} \cdot \hom{\pi} > 0\) then \(p\) lies on one side of the plane
+                and if \(\hom{p} \cdot \hom{\pi} < 0\) then it lies on the other.
             </p>
         </section>
         <section class="slide">
@@ -920,18 +922,23 @@
                 The <em>dual Pl&uuml;cker matrix</em> is given by \[
                 \hom{L}^* = \hom{\pi} \hom{\rho}^T - \hom{\rho} \hom{\pi}^T,
                 \] and represents the line given by the intersection of the planes \(\pi\) and \(\rho\), called the <em>meet</em> of the planes.
+                The correspondence between \(\hom{L}\) and \(\hom{L}^*\) only involves reordering the elements.
             </p>
             <p>
                 \begin{align}
-                p \in L \quad \Longleftrightarrow \quad &\hom{L}^* \hom{p} = 0, \\
-                L \subset \pi \quad \Longleftrightarrow \quad &\hom{L} \hom{\pi} = 0, \\
-                \text{the join of } p \text{ and } L \text{ is} \qquad &\hom{\pi} = \hom{L}^* \hom{p}, \\
-                \text{the meet of } L \text{ and } \pi \text{ is} \qquad &\hom{p} = \hom{L} \hom{\pi}.
+                p \in L \quad \Longleftrightarrow \quad &\hom{L}^* \hom{p} = 0
+                \quad \Longleftrightarrow \quad \hom{\pi} (\hom{\rho} \cdot \hom{p}) - \hom{\rho} (\hom{\pi} \cdot \hom{p}) = 0
+                \quad \Longleftrightarrow \quad p \in \rho \text{ and } p \in \pi, \\
+                \pi \supset L \quad \Longleftrightarrow \quad &\hom{L} \hom{\pi} = 0
+                \quad \Longleftrightarrow \quad \hom{p} (\hom{q} \cdot \hom{\pi}) - \hom{q} (\hom{p} \cdot \hom{\pi}) = 0
+                \quad \Longleftrightarrow \quad q \in \pi \text{ and } p \in \pi, \\
                 \end{align}
+                The join of \(p\) and \(L\) is \(\hom{\pi} = \hom{L}^* \hom{p}\) and
+                the meet of \(L\) and \(\pi\) is \(\hom{p} = \hom{L} \hom{\pi}\).
             </p>
         </section>
         <section class="slide">
-            <h2>Pl&uuml;cker lines</h2>
+            <h2>Pl&uuml;cker coordinates</h2>
             <p>
                 If we study the elements of the Pl&uuml;cker matrix for two points \(p\) and \(q\), we see that they will be on the form \[
                 \hom{L} = \begin{bmatrix}
@@ -954,13 +961,18 @@
                 n_y &= p_z q_x - p_x q_z, & v_y &= p_y - q_y, \\
                 n_z &= p_x q_y - p_y q_x, & v_z &= p_z - q_z.
                 \end{align}
-                From this we obtain a more compact representation of a line, the <em>Pl&uuml;cker line</em>, \[
+                From this we obtain a more compact representation of a line, the <em>Pl&uuml;cker coordinates</em>, \[
                 \mathcal{L} = \begin{bmatrix}
                 n \\ v
                 \end{bmatrix} \quad \text{where} \quad n = p \times q \quad \text{and} \quad v = p - q.
                 \]
                 Geometrically, \(n\) is a normal vector to the plane containing the line and the origin, and
                 \(v\) is a direction vector of the line.
+            </p>
+            <p>
+                <strong>Note:</strong> when transforming points by \(A\), the Pl&uuml;cker matrices are transformed by \[
+                \hom{L}' = A \hom{L} A^T \quad \text{and} \quad {\hom{L}^*}' = (A^T)^{-1} \hom{L}^* A^{-1}
+                \]
             </p>
         </section>
         <!--
