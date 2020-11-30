@@ -81,6 +81,7 @@
          const RED = new BABYLON.Color3(0.9, 0.1, 0.1);
          const GREEN = new BABYLON.Color3(0.1, 0.9, 0.1);
          const BLUE = new BABYLON.Color3(0.1, 0.1, 0.9);
+         const BLACK = new BABYLON.Color3(0, 0, 0);
 
          function blankScene(canvas, engine) {
              const scene = new BABYLON.Scene(engine);
@@ -97,7 +98,7 @@
 
          function teapotScene(canvas, engine) {
              const scene = new BABYLON.Scene(engine);
-             // scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+             scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
              const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 16, BABYLON.Vector3.Zero(), scene);
              const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
              l.intensity = 0.7;
@@ -119,6 +120,7 @@
 
          function planeScene(canvas, engine) {
              const scene = new BABYLON.Scene();
+             scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
              const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 8, BABYLON.Vector3.Zero(), scene);
              const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
              l.intensity = 0.7;
@@ -136,6 +138,8 @@
              green.diffuseColor = GREEN;
              const blue = new BABYLON.StandardMaterial('blue', scene);
              blue.diffuseColor = BLUE;
+             const black = new BABYLON.StandardMaterial('black', scene);
+             black.diffuseColor = BLACK;
              return scene;
          }
 
@@ -195,6 +199,46 @@
              return path;
          }
 
+         function transformBadNormals(mesh, matrix) {
+             let normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+             for (let k = 0; k < normals.length; k += 3) {
+                 let n = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(normals[k], normals[k + 1], normals[k + 2]), matrix);
+                 normals[k] = n.x;
+                 normals[k + 1] = n.y;
+                 normals[k + 2] = n.z;
+             }
+             mesh.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
+             let pos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+             for (let k = 0; k < pos.length; k += 3) {
+                 let p = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(pos[k], pos[k + 1], pos[k + 2]), matrix);
+                 pos[k] = p.x;
+                 pos[k + 1] = p.y;
+                 pos[k + 2] = p.z;
+             }
+             mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, pos);
+         }
+
+         function transformGoodNormals(mesh, matrix) {
+             let normals = mesh.getVerticesData(BABYLON.VertexBuffer.NormalKind);
+             let inv = new BABYLON.Matrix();
+             matrix.invertToRef(inv);
+             for (let k = 0; k < normals.length; k += 3) {
+                 let n = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(normals[k], normals[k + 1], normals[k + 2]), inv.transpose());
+                 normals[k] = n.x;
+                 normals[k + 1] = n.y;
+                 normals[k + 2] = n.z;
+             }
+             mesh.updateVerticesData(BABYLON.VertexBuffer.NormalKind, normals);
+             let pos = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind);
+             for (let k = 0; k < pos.length; k += 3) {
+                 let p = BABYLON.Vector3.TransformCoordinates(new BABYLON.Vector3(pos[k], pos[k + 1], pos[k + 2]), matrix);
+                 pos[k] = p.x;
+                 pos[k + 1] = p.y;
+                 pos[k + 2] = p.z;
+             }
+             mesh.updateVerticesData(BABYLON.VertexBuffer.PositionKind, pos);
+         }
+
          function doRender() {
              canvas = document.getElementById('canvas');
              canvas.height = canvas.width = Math.floor(window.innerWidth / 4);
@@ -235,6 +279,8 @@
              position: fixed;
              right: 5vw;
              top: 10vh;
+             /* border: 1px solid black;
+             border-radius: 5px; */
          }
          .slide {
              width: 60vw;
@@ -331,7 +377,9 @@ d[1] = (c, e) => {
                 1 & 0 & 0 & 0 \\
                 1 & 0 & 0 & 2 \sin t \\
                 0 & 0 & 0 & 1
-                \end{bmatrix}.
+                \end{bmatrix} \quad \Longrightarrow \quad C \tilde{p} = \begin{bmatrix}
+                x + 2 \cos t \\ y \\ z + 2 \cos t \\ 1
+                \end{bmatrix}
                 \]
                 How can we interpret this association of \(p\) with \(\tilde{p}\) geometrically?
             </p>
@@ -358,7 +406,9 @@ d[2] = (c, e) => {
             <h2>Homogeneous coordinates</h2>
             <p>
                 We identify a line on the form \[
-                \tilde{p} = \left\{ \begin{pmatrix}
+                \operatorname{span} \begin{pmatrix}
+                x \\ y \\ 1
+                \end{pmatrix} = \left\{ \begin{pmatrix}
                 \lambda x \\ \lambda y \\ \lambda
                 \end{pmatrix} : \lambda \in \mathbf{R} \right\},
                 \] with any representative \[
@@ -375,6 +425,17 @@ d[2] = (c, e) => {
                 \] in the two dimensional plane.
                 Each 2D point is thus represented by a one-dimensional subspace (a line) in 3D.
                 In a similar manner, each 3D point can be represented by a one-dimensional subspace of 4D space.
+            </p>
+            <p>
+                <strong>Example:</strong> \[
+                \begin{bmatrix}
+                0.5 \\ 0.2 \\ 1
+                \end{bmatrix} = \begin{bmatrix}
+                5 \\ 2 \\ 10
+                \end{bmatrix} = \begin{bmatrix}
+                0.44 \dots \\ 0.17 \dots \\ 0.88 \dots
+                \end{bmatrix}
+                \]
             </p>
             <script>
              d[3] = (c, e) => {
@@ -402,7 +463,7 @@ d[2] = (c, e) => {
                 to the \(xy\) plane with \(z = 1\), called the <em>viewing plane</em>.
                 What happens for \[
                 \tilde{p} = \begin{bmatrix}
-                \lambda x \\ \lambda y \\ 0
+                x \\ y \\ 0
                 \end{bmatrix}?
                 \]
                 These lines can be seen as representing <em>points at infinity</em>, in the direction given by \(x\) and \(y\).
@@ -410,6 +471,27 @@ d[2] = (c, e) => {
             <p>
                 In one dimension there is only one point at infinity, commonly denoted \(\infty\).
                 In two dimensions there is <em>line at infinity</em> and in three dimensions a <em>plane at infinity</em>.
+            </p>
+            <p>
+                <strong>Note:</strong> sometimes these points are interpreted as vectors, as \[
+                \begin{bmatrix}
+                x \\ y \\ 1
+                \end{bmatrix} - \begin{bmatrix}
+                z \\ w \\ 1
+                \end{bmatrix} = \begin{bmatrix}
+                x - z \\ y - w \\ 0
+                \end{bmatrix}
+                \] and \[
+                \begin{bmatrix}
+                x \\ y \\ 1
+                \end{bmatrix} + \begin{bmatrix}
+                \Delta x \\ \Delta y \\ 0
+                \end{bmatrix} = \begin{bmatrix}
+                x + \Delta x \\ y + \Delta y \\ 1
+                \end{bmatrix},
+                \]
+                however performing translations in this way is not really supported by the theory
+                and can result in errors when combined with other transformations.
             </p>
             <script>
              d[4] = (c, e) => {
@@ -421,7 +503,7 @@ d[2] = (c, e) => {
                  let l = BABYLON.MeshBuilder.CreateLines('l', {points: [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()], updatable: true}, s);
                  l.color = GREEN;
                  let m = BABYLON.MeshBuilder.CreateLines('m', {points: [new BABYLON.Vector3(0, 0, -1.5), new BABYLON.Vector3(0, 0, 1.5)]}, s);
-                 // m.color = RED;
+                 m.color = BLACK;
                  s.registerBeforeRender(() => {
                      p.position.x = -1;
                      p.position.y = 1;
@@ -436,7 +518,8 @@ d[2] = (c, e) => {
             <h2>Representation of lines in 2D</h2>
             <p>
                 This representation of points in 2D also gives a simple representation of lines in 2D:
-                The line containing points with homogeneous coordinates \(\tilde{p}\) and \(\tilde{q}\) is has homogeneous coordinates given by the two-dimensional subspace \(\tilde{l}\),
+                The line containing points with homogeneous coordinates \(\tilde{p}\) and \(\tilde{q}\) is has homogeneous coordinates given by
+                the two-dimensional subspace with normal vector \(\tilde{l}\),
                 containing both \(\tilde{p}\) and \(\tilde{q}\).
             </p>
             <p>
@@ -453,29 +536,8 @@ d[2] = (c, e) => {
                 \] where we identify any normal vector of the plane with the plane itself.
             </p>
             <p>
-                Finding the point where two lines \(l\) and \(m\) intersect simply amounts to finding the intersection between the planes \(\tilde{l}\) and \(\tilde{m}\),
-                which can be done with the cross product of the normal vectors, \[
-                \tilde{p} = \tilde{l} \times \tilde{m}.
-                \]
-                The fact that points and lines are essentially interchangeable in 2D is called <em>duality</em>.
-            </p>
-            <p>
-                What happens if the two lines are parallel? For example, consider \[
-                \tilde{l} = \begin{bmatrix}
-                1 \\ 2 \\ 3
-                \end{bmatrix} \quad \text{and} \quad \tilde{m} = \begin{bmatrix}
-                1 \\ 2 \\ 5
-                \end{bmatrix} \quad \Longrightarrow \quad \tilde{p} = \tilde{l} \times \tilde{m} = \begin{bmatrix}
-                4 \\ -2 \\ 0
-                \end{bmatrix}.
-                \]
-                In the interpretation of projective geometry, \(l\) and \(m\) meet some point at infinity \(p\).
-                In fact, any line parallel to \(l\) will meet it at \(p\).
-            </p>
-            <p>
-                What if the lines are coincident (i.e. the same line)?
-                Then the cross product of the homogeneous coordinates is zero.
-                The converse is also true.
+                <strong>Remark:</strong> if the two points are the same, then \(\tilde{p} = \lambda \tilde{q}\) for some \(\lambda\),
+                and \(\tilde{p} \times \tilde{q} = 0\), signifying the fact that there are infinitely many lines containing \(p\) and \(q\).
             </p>
             <script>
              d[5] = (c, e) => {
@@ -492,6 +554,7 @@ d[2] = (c, e) => {
                  let l = BABYLON.MeshBuilder.CreateLines('l', {points: [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()], updatable: true}, s);
                  l.color = GREEN;
                  let m = BABYLON.MeshBuilder.CreateLines('m', {points: [BABYLON.Vector3.Zero(), BABYLON.Vector3.Zero()], updatable: true}, s);
+                 m.color = BLACK;
                  let n = BABYLON.MeshBuilder.CreateLines('n', {points: [q.position.scale(-0.5), q.position.scale(1.5)]}, s);
                  n.color = BLUE;
                  // let plane = BABYLON.MeshBuilder.CreatePlane('plane', {size: 3});
@@ -519,40 +582,174 @@ d[2] = (c, e) => {
             </script>
         </section>
         <section class="slide">
+            <h2>Intersection of lines in 2D</h2>
+            <p>
+                Finding the point where two lines \(l\) and \(m\) intersect simply amounts to finding the intersection between
+                the planes with normal vectors \(\tilde{l}\) and \(\tilde{m}\), which can be done with the cross product, \[
+                \tilde{p} = \tilde{l} \times \tilde{m}.
+                \]
+                The fact that points and lines are essentially interchangeable in 2D is called <em>duality</em>.
+            </p>
+            <p>
+                What happens if the two lines are parallel? For example, consider \[
+                \tilde{l} = \begin{bmatrix}
+                1 \\ 2 \\ 3
+                \end{bmatrix} \quad \text{and} \quad \tilde{m} = \begin{bmatrix}
+                1 \\ 2 \\ 5
+                \end{bmatrix} \quad \Longrightarrow \quad \tilde{p} = \tilde{l} \times \tilde{m} = \begin{bmatrix}
+                4 \\ -2 \\ 0
+                \end{bmatrix}.
+                \]
+                In the interpretation of projective geometry, \(l\) and \(m\) meet some point at infinity \(p\).
+                In fact, any line parallel to \(l\) will meet it at \(p\).
+            </p>
+            <p>
+                <strong>Remark</strong> If the lines are coincident (i.e. the same line),
+                the cross product of the homogeneous coordinates is zero.
+                The converse is also true.
+            </p>
+            <script>
+             d[6] = (c, e) => {
+                 let s = planeScene(c, e);
+                 let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
+                 o.material = s.getMaterialByName('red');
+                 let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
+                 p.material = s.getMaterialByName('black');
+                 let l0 = new BABYLON.Vector3(1, 1, -2);
+                 let l1 = new BABYLON.Vector3(-2, 1, 0);
+                 let l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], updatable: true}, s);
+                 l.color = GREEN;
+                 let lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l0, l1], updatable: true}, s);
+                 lnorm.color = GREEN;
+                 let n0 = new BABYLON.Vector3(2, 1, 2);
+                 let n1 = new BABYLON.Vector3(-2, 1, -2);
+                 let n = BABYLON.MeshBuilder.CreateLines('n', {points: [n0, n1]}, s);
+                 n.color = BLUE;
+                 let nn = n1.cross(n0);
+                 nn.normalize()
+                 let nnorm = BABYLON.MeshBuilder.CreateLines('norm', {points: [n0, n0.add(nn)]}, s);
+                 nnorm.color = BLUE;
+                 s.registerBeforeRender(() => {
+                     // s.getCameraByName('camera').alpha = time();
+                     l0.z = -2 * Math.sin(time());
+                     l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], instance: l}, s);
+                     let ln = l1.cross(l0);
+                     ln.normalize();
+                     lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l1, l1.add(ln)], instance: lnorm}, s);
+                     p.position = nn.cross(ln);
+                     p.position.scaleInPlace(1 / p.position.y);
+                 });
+                 return s;
+             };
+            </script>
+        </section>
+        <section class="slide">
             <h2>Representing planes in 3D</h2>
             <p>
-                The situation with points and lines in 2D is analogous to points and planes in 3D, as both objects have three degrees of freedom.
-                The Cartesian equation for the plane is \[
+                The dual of points in 2D are lines, and analogously the dual of points in 3D are planes, as both points and planes have three degrees of freedom.
+                The equation of the plane in Cartesian coordinates is \[
                 \begin{pmatrix}
                 x \\ y \\ z
                 \end{pmatrix} \in \pi \quad \Longleftrightarrow \quad \begin{pmatrix}
                 a \\ b \\ c
                 \end{pmatrix} \cdot \begin{pmatrix}
                 x \\ y \\ z
-                \end{pmatrix} = d,
-                \] where \(\begin{pmatrix} a & b & c \end{pmatrix}^T\) is a normal vector and \(d\) a constand determining "how far the plane is from the origin".
+                \end{pmatrix} = -d,
+                \] where \(\begin{pmatrix} a & b & c \end{pmatrix}^T\) is a normal vector and \(d\) a constant determining how far the plane is from the origin,
+                in units of the length of the normal vector.
             </p>
             <p>
-                In homogeneous coordinates this can be expressed as \begin{equation}
-                \tag{*} \label{star}
-                p \in \pi \quad \Longleftrightarrow \quad \tilde{p} \cdot \tilde{\pi} = 0.
-                \end{equation}
+                In homogeneous coordinates this can be expressed as \[
+                p \in \pi \quad \Longleftrightarrow \quad \tilde{p} \cdot \tilde{\pi} = 0,
+                \] where \[
+                \tilde{p} = \begin{bmatrix}
+                x \\ y \\ z \\ 1
+                \end{bmatrix} \quad \text{and} \quad \tilde{\pi} = \begin{bmatrix}
+                a \\ b \\ c \\ d
+                \end{bmatrix}.
+                \]
             </p>
+        </section>
+        <section class="slide">
+            <h2>Trnasforming normal vectors</h2>
             <p>
-                Problem: when applying an affine transformation \(A\) to the space, planes are not transformed as expected.
+                When applying an affine transformation \(A\) to the space, planes are not transformed as expected.
                 The same is true for lines in 2D.
-                Let \(\tilde{p}' = A \tilde{p}\) and \(\tilde{\pi}' = A \tilde{\pi}\). Then the equation becomes \[
+            </p>
+            <p>
+                Let \(\tilde{p}' = A \tilde{p}\) and \(\tilde{\pi}' = A \tilde{\pi}\). Then the equation of the transformed plane becomes \[
                 0 = \tilde{p}' \cdot \tilde{\pi}' = (A \tilde{p}) \cdot (A \tilde{\pi}) = (A \tilde{p})^T (A \tilde{\pi}) = \tilde{p} A^T A \tilde{\pi},
-                \] but this is not the same as \eqref{star}!
-                The solution is to transform planes by the inverse of the transpose of \(A\), so that \(\tilde{\pi}' = (A^T)^{-1}\), and the equation becomes \[
+                \] but this is not the same plane as \[
+                0 = \tilde{p} \cdot \tilde{\pi}.
+                \]
+                The solution is to transform planes by the inverse of the transpose of \(A\), so that \(\tilde{\pi}' = (A^T)^{-1} \tilde{\pi}\), and the equation becomes \[
                 0 = \tilde{p}' \cdot \tilde{\pi}'
                 = (A \tilde{p}) \cdot ((A^T)^{-1} \tilde{\pi})
                 = (A \tilde{p})^T ((A^T)^{-1} \tilde{\pi})
                 = \tilde{p} A^T (A^T)^{-1} \tilde{\pi}
                 = \tilde{p} \cdot \tilde{\pi}.
                 \]
-                This also applies when transforming lines in 2D, as both \(\tilde{l}\) and \(\tilde{\pi}\) are essentially normal vectors of the line or plane they represent.
             </p>
+            <p>
+                <strong>Example:</strong> the teapots are both transformed by \[
+                A = \begin{bmatrix}
+                0.5 & 0 & 1 & 0 \\
+                0 & 1.25 & 0 & 0 \\
+                0 & 0 & 0.75 & 0 \\
+                0 & 0 & 0 & 1
+                \end{bmatrix},
+                \]
+                but the upper one has its normals transformed correctly by \((A^T)^{-1}\),
+                while the lower one has its normals transformed incorrectly by \(A\),
+                resulting in lighting artifacts (as light reflecting off the object is computed using surface normals).
+            </p>
+            <p>
+                <strong>Remark:</strong> Somethimes the notation \(A^{-T}\) is used, as \[
+                (A^T)^{-1} = (A^T)^{-1} (A^{-1} A)^T = (A^T)^{-1} A^T (A^{-1})^T = (A^{-1})^T.
+                \]
+            </p>
+            <script>
+             d[8] = (c, e) => {
+                 let s = teapotScene(c, e);
+                 let m = new BABYLON.StandardMaterial('m', s);
+                 m.diffuseColor = BLUE;
+                 m.specularColor = RED;
+                 m.backFaceCulling = false;
+                 var l2 = new BABYLON.DirectionalLight("l2", new BABYLON.Vector3(1, 0, 3), s);
+                 let t1, t2;
+                 let normals;
+                 s.registerBeforeRender(() => {
+                     t1 = s.getMeshByName('teapot');
+                     if (t1 && !t2) {
+                         t1.material = m;
+                         t2 = t1.clone();
+                         t2.makeGeometryUnique();
+                         t1.position.y = -3.2;
+                         // t1.position.z = -2;
+                         t1.markVerticesDataAsUpdatable(BABYLON.VertexBuffer.PositionKind, true);
+                         t1.markVerticesDataAsUpdatable(BABYLON.VertexBuffer.NormalKind, true);
+                         t2.position.y = 1.2;
+                         // t2.position.z = 2;
+                         t2.markVerticesDataAsUpdatable(BABYLON.VertexBuffer.PositionKind, true);
+                         t2.markVerticesDataAsUpdatable(BABYLON.VertexBuffer.NormalKind, true);
+
+                         A = BABYLON.Matrix.FromValues(
+                             0.5, 0, 1, 0,
+                             0, 1.25, 0, 0,
+                             0, 0, 0.75, 0,
+                             0, 0, 0, 1
+                         ).transpose();
+                         transformBadNormals(t1, A);
+                         transformGoodNormals(t2, A);
+                     }
+                     if (t1 && t2) {
+                         t1.rotation.y = time();
+                         t2.rotation.y = time();
+                     }
+                 });
+                 return s;
+             };
+            </script>
             <!--
             <script class="demo">
              d[6] = (c, e) => {
@@ -645,9 +842,10 @@ d[2] = (c, e) => {
                 and we can take \(\tilde{\pi} = v_4\) to be a representative of the plane.
             </p>
             <p>
-                Note: another method of computing \(\tilde{\pi}\) is solving the equation (using <em>index set</em> notation), \[
-                A[\{1,\dots,4\},\{1,2,3\}] v = -A[\{1,\dots,4\},\{4\}],
-                \] and setting \(\tilde{\pi} = \begin{bmatrix} v \\ 1 \end{bmatrix}\).
+                <strong>Note:</strong> another method of computing \(\tilde{\pi}\) is solving the equation (using <em>index set</em> notation), \[
+                A[\{1,2,3\},\{1,2,3\}] \underbrace{v}_{3 \times 1} = -A[\{1,2,4\},\{4\}],
+                \]
+                and setting \(\tilde{\pi} = \begin{bmatrix} v \\ 1 \end{bmatrix}\).
             </p>
         </section>
         <section class="slide">
@@ -685,17 +883,17 @@ d[2] = (c, e) => {
             <p>
                 If we study the elements of the Pl&uuml;cker matrix for two points \(p\) and \(q\), we see that they will be on the form \[
                 \tilde{L} = \begin{bmatrix}
-                p_x & p_y & p_z & 1
-                \end{bmatrix} \begin{bmatrix}
-                q_x \\ q_y \\ q_z \\ 1
-                \end{bmatrix} - \begin{bmatrix}
-                q_x & q_y & q_z & 1
-                \end{bmatrix} \begin{bmatrix}
                 p_x \\ p_y \\ p_z \\ 1
+                \end{bmatrix} \begin{bmatrix}
+                q_x & q_y & q_z & 1
+                \end{bmatrix} - \begin{bmatrix}
+                q_x \\ q_y \\ q_z \\ 1
+                \end{bmatrix} \begin{bmatrix}
+                p_x & p_y & p_z & 1
                 \end{bmatrix} = \begin{bmatrix}
-                0 & -n_x & n_y & v_x \\
-                n_x & 0 & -n_z & v_y \\
-                -n_y & n_z & 0 & v_z \\
+                0 & n_z & -n_y & v_x \\
+                -n_z & 0 & n_x & v_y \\
+                n_y & -n_x & 0 & v_z \\
                 -v_x & -v_y & -v_z & 0
                 \end{bmatrix},
                 \] where
@@ -714,26 +912,26 @@ d[2] = (c, e) => {
             </p>
         </section>
         <!--
-        <section class="slide">
-            <h2>Circles, ellipses, parabolas and hyperbolas</h2>
-            <script>
+             <section class="slide">
+             <h2>Circles, ellipses, parabolas and hyperbolas</h2>
+             <script>
              d[7] = (c, e) => {
-                 let s = planeScene(c, e);
-                 let cone = createDoubleCone(3, 3, s);
-                 let material = new BABYLON.StandardMaterial('material', s);
-                 material.diffuseColor = RED;
-                 material.alpha = 0.6;
-                 cone.material = material;
-                 cone.material = material;
-                 let circle = BABYLON.MeshBuilder.CreateLines('circle', {points: ellipsePoints(0.5, 0.5), updatable: true}, s);
-                 circle.color = GREEN;
-                 s.registerBeforeRender(() => {
-                     cone.rotation.x = time() / 2;
-                 });
-                 return s;
+             let s = planeScene(c, e);
+             let cone = createDoubleCone(3, 3, s);
+             let material = new BABYLON.StandardMaterial('material', s);
+             material.diffuseColor = RED;
+             material.alpha = 0.6;
+             cone.material = material;
+             cone.material = material;
+             let circle = BABYLON.MeshBuilder.CreateLines('circle', {points: ellipsePoints(0.5, 0.5), updatable: true}, s);
+             circle.color = GREEN;
+             s.registerBeforeRender(() => {
+             cone.rotation.x = time() / 2;
+             });
+             return s;
              }
-            </script>
-        </section>
+             </script>
+             </section>
         -->
         <section class="slide">
             <h2>Computational advantages of projective geometry</h2>
@@ -768,7 +966,7 @@ d[2] = (c, e) => {
             </p>
             <p>
                 Similarily, points at infinity allow us to handle special cases without any extra code.
-                This also speeds up computation slightly since less branches are needed, which is one of the more expensive operations in modern computers.
+                This also speeds up computation slightly since fewer branches are needed, which is one of the more expensive operations in modern computers.
             </p>
         </section>
     </body>
