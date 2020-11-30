@@ -119,7 +119,7 @@
          }
 
          function planeScene(canvas, engine) {
-             const scene = new BABYLON.Scene();
+             const scene = new BABYLON.Scene(engine);
              scene.clearColor = new BABYLON.Color4(0, 0, 0, 0);
              const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 8, BABYLON.Vector3.Zero(), scene);
              const l = new BABYLON.HemisphericLight('light', new BABYLON.Vector3(0, 1, 0), scene);
@@ -157,8 +157,8 @@
          function parabolaPoints(a) {
              let path = [];
              for (let t = -100; t < 100; t += 1 / 8) {
-                 let x = 2 * a * t;
-                 let z = a * t * t;
+                 let x = -a * t * t;
+                 let z = 2 * a * t;
                  path.push(new BABYLON.Vector3(x, 1, z));
              }
              return path;
@@ -241,7 +241,7 @@
 
          function doRender() {
              canvas = document.getElementById('canvas');
-             canvas.height = canvas.width = Math.floor(window.innerWidth / 4);
+             canvas.height = canvas.width = Math.floor(window.innerWidth / 3);
 
              const antialias = false;
              engine = new BABYLON.Engine(canvas, antialias);
@@ -270,23 +270,43 @@
          }
          window.addEventListener('load', main);
         </script>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=PT+Sans&family=PT+Serif:wght@700&display=swap" rel="stylesheet">
         <style>
          body {
              margin: 0;
              padding: 0;
+             font-family: 'PT Sans', sans-serif;
+         }
+         h1, h2, h3 {
+             font-family: 'PT Serif', serif;
+         }
+         h1 {
+             font-size: 50pt;
+             text-align: center;
+         }
+         h2 {
+             font-size: 25pt;
+         }
+         h3 {
+             font-size: 20pt;
+             text-align: center;
          }
          #canvas {
              position: fixed;
              right: 5vw;
              top: 10vh;
              /* border: 1px solid black;
-             border-radius: 5px; */
+                border-radius: 5px; */
          }
          .slide {
              width: 60vw;
              height: 90vh;
              position: relative;
              padding: 2.5vw;
+         }
+         .slide:first-child {
+             width: 95vw;
          }
          .controls {
              position: absolute;
@@ -308,18 +328,44 @@
         </style>
     </head>
     <body>
-        <canvas id="canvas"></canvas>
         <section class="slide">
-            <h1>Projective Geometry</h1>
-            <p>
-            </p>
-            <pre class="demo">
-d[0] = (c, e) => {
-    const s = teapotScene(c, e);
-    return s;
-};
-            </pre>
+            <h1>Projective Geometry and Computer Graphics</h1>
+            <h3>Måns Alskog</h3>
+            <h3>November 2020</h3>
+            <!--
+                 <script>
+                 d[0] = (c, e) => {
+                 const s = new BABYLON.Scene(e);
+                 s.clearColor = new BABYLON.Color4(0, 0, 0, 0);
+                 const camera = new BABYLON.ArcRotateCamera('camera', 0, Math.PI / 3, 16, new BABYLON.Vector3(-4, 0, 0), s);
+                 const l = new BABYLON.DirectionalLight('light', new BABYLON.Vector3(0, -1, 0), s);
+                 l.intensity = 0.3;
+                 const plane = BABYLON.MeshBuilder.CreatePlane('plane', {size: 0.5});
+                 const m = new BABYLON.StandardMaterial('m', s);
+                 m.diffuseColor = GREEN;
+                 m.backFaceCulling = false;
+                 plane.material = m;
+                 plane.rotation.x = Math.PI / 2;
+                 plane.position.y += 1;
+                 for (let z = -20; z < 20; z++) {
+                 for (let x = -20; x < 5; x++) {
+                 let inst = plane.createInstance('p' + x + 'p' + z);
+                 inst.position.x = x;
+                 inst.position.z = x % 0.5 + z;
+                 }
+                 }
+                 let parabola = BABYLON.MeshBuilder.CreateLines('parabola', {points: parabolaPoints(0.5), updatable: true}, s);
+                 parabola.color = RED;
+                 s.registerBeforeRender(() => {
+                 camera.beta = Math.PI * 3 / 8 * (0.5 + 0.5 * Math.sin(time()));
+                 //parabola = BABYLON.MeshBuilder.CreateLines('parabola', {points: parabolaPoints(Math.abs(Math.sin(time()))), instance: parabola}, s);
+                 });
+                 return s;
+                 };
+                 </script>
+            -->
         </section>
+        <canvas id="canvas"></canvas>
         <section class="slide">
             <h2>Linear Transformations</h2>
             <p>
@@ -337,30 +383,30 @@ d[0] = (c, e) => {
                 \end{pmatrix}
                 \] an object by multiplying each of its vertices with the matrix \(AB\).
             </p>
-            <pre class="demo">
-d[1] = (c, e) => {
-    let s = teapotScene(c, e);
-    s.registerBeforeRender(() => {
-        A = BABYLON.Matrix.FromValues(
-            0.75 + 0.25 * Math.sin(time()), 0, 0, 0,
-            0, 0.75 + 0.25 * Math.sin(time()), 0, 0,
-            0, 0, 0.75 + 0.25 * Math.sin(time()), 0,
-            0, 0, 0, 1
-        ).transpose();
-        B = BABYLON.Matrix.FromValues(
-            Math.cos(time()), 0, Math.sin(time()), 0,
-            0, 1, 0, 0,
-            -Math.sin(time()), 0, Math.cos(time()), 0,
-            0, 0, 0, 1
-        ).transpose();
-        let m = s.getMeshByName('teapot');
-        if (m) {
-            m.setPivotMatrix(A.multiply(B), false);
-        }
-    });
-    return s;
-};
-            </pre>
+            <script>
+             d[1] = (c, e) => {
+                 let s = teapotScene(c, e);
+                 s.registerBeforeRender(() => {
+                     A = BABYLON.Matrix.FromValues(
+                         0.75 + 0.25 * Math.sin(time()), 0, 0, 0,
+                         0, 0.75 + 0.25 * Math.sin(time()), 0, 0,
+                         0, 0, 0.75 + 0.25 * Math.sin(time()), 0,
+                         0, 0, 0, 1
+                     ).transpose();
+                     B = BABYLON.Matrix.FromValues(
+                         Math.cos(time()), 0, Math.sin(time()), 0,
+                         0, 1, 0, 0,
+                         -Math.sin(time()), 0, Math.cos(time()), 0,
+                         0, 0, 0, 1
+                     ).transpose();
+                     let m = s.getMeshByName('teapot');
+                     if (m) {
+                         m.setPivotMatrix(A.multiply(B), false);
+                     }
+                 });
+                 return s;
+             };
+            </script>
         </section>
         <section class="slide">
             <h2>Affine transformations</h2>
@@ -383,24 +429,24 @@ d[1] = (c, e) => {
                 \]
                 How can we interpret this association of \(p\) with \(\tilde{p}\) geometrically?
             </p>
-            <pre class="demo">
-d[2] = (c, e) => {
-    let s = teapotScene(c, e);
-    s.registerBeforeRender(() => {
-        C = BABYLON.Matrix.FromValues(
-            1, 0, 0, 2 * Math.cos(time()),
-            0, 1, 0, 0,
-            0, 0, 1, 2 * Math.sin(time()),
-            0, 0, 0, 1
-        ).transpose();
-        let m = s.getMeshByName('teapot');
-        if (m) {
-            m.setPivotMatrix(C, false);
-        }
-    });
-    return s;
-};
-            </pre>
+            <script>
+             d[2] = (c, e) => {
+                 let s = teapotScene(c, e);
+                 s.registerBeforeRender(() => {
+                     C = BABYLON.Matrix.FromValues(
+                         1, 0, 0, 2 * Math.cos(time()),
+                         0, 1, 0, 0,
+                         0, 0, 1, 2 * Math.sin(time()),
+                         0, 0, 0, 1
+                     ).transpose();
+                     let m = s.getMeshByName('teapot');
+                     if (m) {
+                         m.setPivotMatrix(C, false);
+                     }
+                 });
+                 return s;
+             };
+            </script>
         </section>
         <section class="slide">
             <h2>Homogeneous coordinates</h2>
@@ -490,7 +536,7 @@ d[2] = (c, e) => {
                 x + \Delta x \\ y + \Delta y \\ 1
                 \end{bmatrix},
                 \]
-                however performing translations in this way is not really supported by the theory
+                however this is not really supported by the theory
                 and can result in errors when combined with other transformations.
             </p>
             <script>
@@ -609,38 +655,38 @@ d[2] = (c, e) => {
                 The converse is also true.
             </p>
             <script>
-             d[6] = (c, e) => {
-                 let s = planeScene(c, e);
-                 let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
-                 o.material = s.getMaterialByName('red');
-                 let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
-                 p.material = s.getMaterialByName('black');
-                 let l0 = new BABYLON.Vector3(1, 1, -2);
-                 let l1 = new BABYLON.Vector3(-2, 1, 0);
-                 let l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], updatable: true}, s);
-                 l.color = GREEN;
-                 let lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l0, l1], updatable: true}, s);
-                 lnorm.color = GREEN;
-                 let n0 = new BABYLON.Vector3(2, 1, 2);
-                 let n1 = new BABYLON.Vector3(-2, 1, -2);
-                 let n = BABYLON.MeshBuilder.CreateLines('n', {points: [n0, n1]}, s);
-                 n.color = BLUE;
-                 let nn = n1.cross(n0);
-                 nn.normalize()
-                 let nnorm = BABYLON.MeshBuilder.CreateLines('norm', {points: [n0, n0.add(nn)]}, s);
-                 nnorm.color = BLUE;
-                 s.registerBeforeRender(() => {
-                     // s.getCameraByName('camera').alpha = time();
-                     l0.z = -2 * Math.sin(time());
-                     l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], instance: l}, s);
-                     let ln = l1.cross(l0);
-                     ln.normalize();
-                     lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l1, l1.add(ln)], instance: lnorm}, s);
-                     p.position = nn.cross(ln);
-                     p.position.scaleInPlace(1 / p.position.y);
-                 });
-                 return s;
-             };
+                d[6] = (c, e) => {
+                let s = planeScene(c, e);
+                let o = BABYLON.MeshBuilder.CreateSphere('o', {diameter: 0.2}, s);
+                o.material = s.getMaterialByName('red');
+                let p = BABYLON.MeshBuilder.CreateSphere('p', {diameter: 0.2}, s);
+                p.material = s.getMaterialByName('black');
+                let l0 = new BABYLON.Vector3(1, 1, -2);
+                let l1 = new BABYLON.Vector3(-2, 1, 0);
+                let l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], updatable: true}, s);
+                l.color = GREEN;
+                let lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l0, l1], updatable: true}, s);
+                lnorm.color = GREEN;
+                let n0 = new BABYLON.Vector3(2, 1, 2);
+                let n1 = new BABYLON.Vector3(-2, 1, -2);
+                let n = BABYLON.MeshBuilder.CreateLines('n', {points: [n0, n1]}, s);
+                n.color = BLUE;
+                let nn = n1.cross(n0);
+                nn.normalize()
+                let nnorm = BABYLON.MeshBuilder.CreateLines('norm', {points: [n0, n0.add(nn)]}, s);
+                nnorm.color = BLUE;
+                s.registerBeforeRender(() => {
+                // s.getCameraByName('camera').alpha = time();
+                l0.z = -2 * Math.sin(time());
+                l = BABYLON.MeshBuilder.CreateLines('l', {points: [l0, l1], instance: l}, s);
+                let ln = l1.cross(l0);
+                ln.normalize();
+                lnorm = BABYLON.MeshBuilder.CreateLines('lnorm', {points: [l1, l1.add(ln)], instance: lnorm}, s);
+                p.position = nn.cross(ln);
+                p.position.scaleInPlace(1 / p.position.y);
+                });
+                return s;
+                };
             </script>
         </section>
         <section class="slide">
@@ -703,11 +749,13 @@ d[2] = (c, e) => {
                 while the lower one has its normals transformed incorrectly by \(A\),
                 resulting in lighting artifacts (as light reflecting off the object is computed using surface normals).
             </p>
+            <!--
             <p>
                 <strong>Remark:</strong> Somethimes the notation \(A^{-T}\) is used, as \[
                 (A^T)^{-1} = (A^T)^{-1} (A^{-1} A)^T = (A^T)^{-1} A^T (A^{-1})^T = (A^{-1})^T.
                 \]
             </p>
+            -->
             <script>
              d[8] = (c, e) => {
                  let s = teapotScene(c, e);
@@ -751,7 +799,7 @@ d[2] = (c, e) => {
              };
             </script>
             <!--
-            <script class="demo">
+            <script>
              d[6] = (c, e) => {
                  let s = teapotScene(c, e);
                  let camera = s.getCameraByName('camera');
@@ -843,9 +891,8 @@ d[2] = (c, e) => {
             </p>
             <p>
                 <strong>Note:</strong> another method of computing \(\tilde{\pi}\) is solving the equation (using <em>index set</em> notation), \[
-                A[\{1,2,3\},\{1,2,3\}] \underbrace{v}_{3 \times 1} = -A[\{1,2,4\},\{4\}],
+                A[\{1,2,3\},\{1,2,3\}] \underbrace{v}_{3 \times 1} = -A[\{1,2,4\},\{4\}] \quad \text{and setting} \quad \tilde{\pi} = \begin{bmatrix} v \\ 1 \end{bmatrix}.
                 \]
-                and setting \(\tilde{\pi} = \begin{bmatrix} v \\ 1 \end{bmatrix}\).
             </p>
         </section>
         <section class="slide">
@@ -869,7 +916,6 @@ d[2] = (c, e) => {
                 \] and represents the line given by the intersection of the planes \(\pi\) and \(\rho\), called the <em>meet</em> of the planes.
             </p>
             <p>
-                This representation gives a number of nice formulas:
                 \begin{align}
                 p \in L \quad \Longleftrightarrow \quad &\tilde{L}^* \tilde{p} = 0, \\
                 L \subset \pi \quad \Longleftrightarrow \quad &\tilde{L} \tilde{\pi} = 0, \\
@@ -966,7 +1012,8 @@ d[2] = (c, e) => {
             </p>
             <p>
                 Similarily, points at infinity allow us to handle special cases without any extra code.
-                This also speeds up computation slightly since fewer branches are needed, which is one of the more expensive operations in modern computers.
+                This also speeds up computation slightly since fewer branches are needed,
+                which are one of the more expensive operations for modern computers to handle.
             </p>
         </section>
     </body>
