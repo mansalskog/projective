@@ -908,7 +908,7 @@
             <p>
                 In 3D lines have more degrees of freedom than a point has (4 compared to 3).
                 Therefore their representation becomes more complicated, and there are various different methods of representing a line,
-                one of which is the <em>Pl&uuml;cker matrix</em>.
+                one of which is the <em>Plücker matrix</em>.
                 To represent a line between \(p\) and \(q\), called the <em>join</em> of the points, the matrix \[
                 \hom{L} = \hom{p} \hom{q}^T - \hom{q} \hom{p}^T
                 \] is used.
@@ -919,10 +919,9 @@
                 = \lambda \mu (\hom{p} \hom{q}^T - \hom{q} \hom{p}^T)
                 = \lambda \mu \hom{L}.
                 \]
-                The <em>dual Pl&uuml;cker matrix</em> is given by \[
+                The <em>dual Plücker matrix</em> is given by \[
                 \hom{L}^* = \hom{\pi} \hom{\rho}^T - \hom{\rho} \hom{\pi}^T,
                 \] and represents the line given by the intersection of the planes \(\pi\) and \(\rho\), called the <em>meet</em> of the planes.
-                The correspondence between \(\hom{L}\) and \(\hom{L}^*\) only involves reordering the elements.
             </p>
             <p>
                 \begin{align}
@@ -938,9 +937,9 @@
             </p>
         </section>
         <section class="slide">
-            <h2>Pl&uuml;cker coordinates</h2>
+            <h2>Plücker coordinates</h2>
             <p>
-                If we study the elements of the Pl&uuml;cker matrix for two points \(p\) and \(q\), we see that they will be on the form \[
+                If we study the elements of the Plücker matrix for two points \(p\) and \(q\), we see that they will be on the form \[
                 \hom{L} = \begin{bmatrix}
                 p_x \\ p_y \\ p_z \\ 1
                 \end{bmatrix} \begin{bmatrix}
@@ -961,18 +960,66 @@
                 n_y &= p_z q_x - p_x q_z, & v_y &= p_y - q_y, \\
                 n_z &= p_x q_y - p_y q_x, & v_z &= p_z - q_z.
                 \end{align}
-                From this we obtain a more compact representation of a line, the <em>Pl&uuml;cker coordinates</em>, \[
+                From this we obtain a more compact representation of a line, the <em>Plücker coordinates</em>, \[
                 \mathcal{L} = \begin{bmatrix}
                 n \\ v
                 \end{bmatrix} \quad \text{where} \quad n = p \times q \quad \text{and} \quad v = p - q.
                 \]
                 Geometrically, \(n\) is a normal vector to the plane containing the line and the origin, and
                 \(v\) is a direction vector of the line.
+                This also confirms that lines have four degrees of freedom, as only the direction of \(n\) and \(v\) are considered.
+            </p>
+        </section>
+        <section class="slide">
+            <h2>Dual Plücker coordinates</h2>
+            <p>
+                In the same way, the dual Plücker matrix is \[
+                \hom{L}^* = \begin{bmatrix}
+                0 & n^*_z & -n^*_y & v^*_x \\
+                -n^*_z & 0 & n^*_x & v^*_y \\
+                n^*_y & -n^*_x & 0 & v^*_z \\
+                -v^*_x & -v^*_y & -v^*_z & 0
+                \end{bmatrix},
+                \] where (temporarily letting \(\pi\) and \(\rho\) represent 3D normal vectors of the respective planes), \[
+                n^* = \pi \times \rho \quad \text{and} \quad v^* = \pi - \rho,
+                \] and reasoning geometrically we see that \(n^*\) lies in both planes, so \(n^* = \lambda v\).
+                Likewise, \(v^*\) is a linear combination of normal vectors,
+                so it is orthogonal to the plane containing the line and the origin (not immediately clear, but true), and \(v^* = \mu n\).
             </p>
             <p>
-                <strong>Note:</strong> when transforming points by \(A\), the Pl&uuml;cker matrices are transformed by \[
-                \hom{L}' = A \hom{L} A^T \quad \text{and} \quad {\hom{L}^*}' = (A^T)^{-1} \hom{L}^* A^{-1}
+                The correspondence between \(\mathcal{L}\) and \(\mathcal{L}^*\), is simply \[
+                \mathcal{L}^* = \begin{bmatrix}
+                v \\ n
+                \end{bmatrix} \quad \text{where} \quad \mathcal{L} = \begin{bmatrix}
+                n \\ v
+                \end{bmatrix}.
                 \]
+                One formula for the correspondence between \(\hom{L}\) and \(\hom{L}^*\) is \(\hom{L}^* = \hom{L}^{-1}\).
+                For this formula, the scalar factors \(\lambda\) and \(\mu\) above are given by \(\lambda = \mu = -1/(n \cdot v)\).
+            </p>
+        </section>
+        <section class="slide">
+            <h2>Transforming lines</h2>
+            <p>
+                <strong>Remark:</strong> we use the notation \(A^{-1} = (A^T)^{-1} = (A^{-1})^T\), as this holds for all invertible \(A\).
+            </p>
+            <p>
+                When transforming points by \(A\), the Plücker matrices are transformed by
+                \begin{align*}
+                \hom{L}' &\overset{\star}{=} A \hom{L} A^T, \\
+                {\hom{L}^*}' &= A^{-T} \hom{L}^* A^{-1},
+                \end{align*}
+                the latter being useful mostly in theory.
+                To actually compute \({\hom{L}^*}'\) it is much faster to compute \(\hom{L}'\) and interchange the elements, than it is to invert the transformation \(A\).
+            </p>
+            <p>
+                The motivation behind the first formula are the two equations
+                \begin{align*}
+                \hom{L}' \hom{\pi}' = \hom{L}' A^{-T} \hom{\pi} &\overset{\star}{=} A \hom{L} A^T A^{-T} \hom{\pi} = A \hom{L} \hom{\pi}, \\
+                (\hom{L}')^* \hom{p}' = (\hom{L}')^{-1} A \hom{p} &\overset{\star}{=} A^{-T} \hom{L}^* A^{-1} A \hom{p} = A^{-T} \hom{L}^* \hom{p},
+                \end{align*}
+                i.e. that the transformed line contains all of its points, transformed by \(A\),
+                and that the transformed line is contained in all planes containing it, transformed by \(A^{-T}\).
             </p>
         </section>
         <!--
